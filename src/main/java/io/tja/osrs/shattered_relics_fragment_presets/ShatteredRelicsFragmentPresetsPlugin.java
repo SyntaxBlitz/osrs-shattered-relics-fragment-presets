@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 
-import jdk.internal.joptsimple.internal.Strings;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.ScriptID;
@@ -35,132 +34,134 @@ import java.util.stream.Collectors;
 @Slf4j
 @PluginDescriptor(name = "Shattered Relics Fragment Presets")
 public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements MouseListener {
-	@Inject
-	private Client client;
+    @Inject
+    private Client client;
 
-	@Inject
-	private ShatteredRelicsFragmentPresetsConfig config;
+    @Inject
+    private ShatteredRelicsFragmentPresetsConfig config;
 
-	@Inject
-	private OverlayManager overlayManager;
+    @Inject
+    private OverlayManager overlayManager;
 
-	@Inject
-	private ShatteredRelicsFragmentPresetsOverlay fragmentOverlay;
+    @Inject
+    private ShatteredRelicsFragmentPresetsOverlay fragmentOverlay;
 
-	@Inject
-	private ShatteredRelicsFragmentPresetsSidebarOverlayPanel sidebarOverlay;
+    @Inject
+    private ShatteredRelicsFragmentPresetsSidebarOverlayPanel sidebarOverlay;
 
-	@Inject
-	private MouseManager mouseManager;
+    @Inject
+    private MouseManager mouseManager;
 
-	@Inject
-	private ChatboxPanelManager chatboxPanelManager;
+    @Inject
+    private ChatboxPanelManager chatboxPanelManager;
 
-	@Inject
-	private Gson gson;
+    @Inject
+    private Gson gson;
 
-	@Inject
-	private ConfigManager configManager;
+    @Inject
+    private ConfigManager configManager;
 
     public static final IntPredicate FILTERED_CHARS = c -> "</>:".indexOf(c) == -1;
 
-	public boolean showingFragments = false;
-	private boolean scrollFlowActive = false;
-	private Set<String> lastEquippedFragmentsForScrollFlow = null;
-	public boolean suppressFilterOverlay = false;
-	public Rectangle fragmentWindowBounds = null;
-	public Rectangle fragmentListBounds = null;
-	public Rectangle fragmentScrollbarInnerBounds = null;
+    public boolean showingFragments = false;
+    private boolean scrollFlowActive = false;
+    private Set<String> lastEquippedFragmentsForScrollFlow = null;
+    public boolean suppressFilterOverlay = false;
+    public Rectangle fragmentWindowBounds = null;
+    public Rectangle fragmentListBounds = null;
+    public Rectangle fragmentScrollbarInnerBounds = null;
 
-	public Set<FragmentData> fragmentData;
-	public Set<Rectangle> presetEquippedFragmentBounds;
+    public Set<FragmentData> fragmentData;
+    public Set<Rectangle> presetEquippedFragmentBounds;
     private Set<String> equippedFragmentNames = new HashSet<>();
 
-	public Rectangle devBounds = null;
+    public Rectangle devBounds = null;
 
-	public Rectangle newPresetButtonBounds; // set by overlay
+    public Rectangle newPresetButtonBounds; // set by overlay
     public Rectangle deletePresetButtonBounds; // set by overlay
 
-	public List<Preset> allPresets = new ArrayList<>();
-	public static Type PRESET_LIST_TYPE = new TypeToken<List<Preset>>() {}.getType();
-	public Preset activePreset;
+    public List<Preset> allPresets = new ArrayList<>();
+    public static Type PRESET_LIST_TYPE = new TypeToken<List<Preset>>() {
+    }.getType();
+    public Preset activePreset;
 
-	@Override
-	protected void startUp() throws Exception {
-		loadPersistedPresets();
+    @Override
+    protected void startUp() throws Exception {
+        loadPersistedPresets();
 
-		mouseManager.registerMouseListener(this);
+        mouseManager.registerMouseListener(this);
 
-		overlayManager.add(fragmentOverlay);
-		overlayManager.add(sidebarOverlay);
-	}
+        overlayManager.add(fragmentOverlay);
+        overlayManager.add(sidebarOverlay);
+    }
 
-	@Override
-	protected void shutDown() throws Exception {
-		mouseManager.unregisterMouseListener(this);
+    @Override
+    protected void shutDown() throws Exception {
+        mouseManager.unregisterMouseListener(this);
 
-		overlayManager.remove(fragmentOverlay);
-		overlayManager.remove(sidebarOverlay);
-	}
+        overlayManager.remove(fragmentOverlay);
+        overlayManager.remove(sidebarOverlay);
+    }
 
-	@Subscribe
-	public void onClientTick(ClientTick event) {
-		Widget fragmentWindow = client.getWidget(735, 1);
-		if (fragmentWindow == null) {
-			activePreset = null;
-			showingFragments = false;
-			scrollFlowActive = false;
-			return;
-		}
+    @Subscribe
+    public void onClientTick(ClientTick event) {
+        Widget fragmentWindow = client.getWidget(735, 1);
+        if (fragmentWindow == null) {
+            activePreset = null;
+            showingFragments = false;
+            scrollFlowActive = false;
+            return;
+        }
 
-		Widget showFiltersButton = client.getWidget(735, 9);
-		suppressFilterOverlay = showFiltersButton.getText().equals(("Hide Filters"));
+        Widget showFiltersButton = client.getWidget(735, 9);
+        suppressFilterOverlay = showFiltersButton.getText().equals(("Hide Filters"));
 
-		Widget fragmentList = client.getWidget(735, 17);
-		Widget fragmentScrollbar = client.getWidget(735, 18);
-		Widget fragmentScrollbarInner = fragmentScrollbar.getChildren()[0];
-		Widget equippedFragmentsContainer = client.getWidget(735, 35);
-		Set<Widget> equippedFragmentWidgets = Arrays.stream(equippedFragmentsContainer.getDynamicChildren())
-				.filter(child -> child.getName() != null && !child.getName().isEmpty())
-				.collect(Collectors.toSet());
-		equippedFragmentNames = equippedFragmentWidgets.stream()
-				.map(child -> Text.removeTags(child.getName()))
-				.collect(Collectors.toSet());
+        Widget fragmentList = client.getWidget(735, 17);
+        Widget fragmentScrollbar = client.getWidget(735, 18);
+        Widget fragmentScrollbarInner = fragmentScrollbar.getChildren()[0];
+        Widget equippedFragmentsContainer = client.getWidget(735, 35);
+        Set<Widget> equippedFragmentWidgets = Arrays.stream(equippedFragmentsContainer.getDynamicChildren())
+                .filter(child -> child.getName() != null && !child.getName().isEmpty())
+                .collect(Collectors.toSet());
+        equippedFragmentNames = equippedFragmentWidgets.stream()
+                .map(child -> Text.removeTags(child.getName()))
+                .collect(Collectors.toSet());
 
-		presetEquippedFragmentBounds = equippedFragmentWidgets.stream()
-				.filter(widget -> activePreset != null && activePreset.fragments.contains(Text.removeTags(widget.getName())))
-				.map(widget -> widget.getBounds())
-				.collect(Collectors.toSet());
+        presetEquippedFragmentBounds = equippedFragmentWidgets.stream()
+                .filter(widget -> activePreset != null
+                        && activePreset.fragments.contains(Text.removeTags(widget.getName())))
+                .map(widget -> widget.getBounds())
+                .collect(Collectors.toSet());
 
-		double totalScrollHeight = fragmentList.getScrollHeight();
+        double totalScrollHeight = fragmentList.getScrollHeight();
 
-		fragmentWindowBounds = fragmentWindow.getBounds();
-		fragmentListBounds = fragmentList.getBounds();
-		fragmentScrollbarInnerBounds = fragmentScrollbarInner.getBounds();
+        fragmentWindowBounds = fragmentWindow.getBounds();
+        fragmentListBounds = fragmentList.getBounds();
+        fragmentScrollbarInnerBounds = fragmentScrollbarInner.getBounds();
 
-		Set<FragmentData> theseFragmentData = new HashSet<>();
+        Set<FragmentData> theseFragmentData = new HashSet<>();
 
-		Widget[] fragmentListSubWidgets = fragmentList.getDynamicChildren();
-		for (int i = 0; i < fragmentListSubWidgets.length; i++) {
-			Widget subWidget = fragmentListSubWidgets[i];
-			if (activePreset != null && activePreset.fragments.contains(subWidget.getText())) {
-				Widget containerSubWidget = fragmentListSubWidgets[i - 7];
-				FragmentData fragmentData = new FragmentData();
-				fragmentData.widgetBounds = containerSubWidget.getBounds();
-				fragmentData.isEquipped = equippedFragmentNames.contains(subWidget.getText());
-				fragmentData.scrollPercentage = containerSubWidget.getRelativeY() / totalScrollHeight;
+        Widget[] fragmentListSubWidgets = fragmentList.getDynamicChildren();
+        for (int i = 0; i < fragmentListSubWidgets.length; i++) {
+            Widget subWidget = fragmentListSubWidgets[i];
+            if (activePreset != null && activePreset.fragments.contains(subWidget.getText())) {
+                Widget containerSubWidget = fragmentListSubWidgets[i - 7];
+                FragmentData fragmentData = new FragmentData();
+                fragmentData.widgetBounds = containerSubWidget.getBounds();
+                fragmentData.isEquipped = equippedFragmentNames.contains(subWidget.getText());
+                fragmentData.scrollPercentage = containerSubWidget.getRelativeY() / totalScrollHeight;
 
-				theseFragmentData.add(fragmentData);
-			}
-		}
+                theseFragmentData.add(fragmentData);
+            }
+        }
 
-		fragmentData = theseFragmentData;
+        fragmentData = theseFragmentData;
 
         if (scrollFlowActive && activePreset != null) { // activePreset should always be non-null here but good to check
             if (!equippedFragmentNames.equals(lastEquippedFragmentsForScrollFlow)) {
                 // scroll to the next one
-				FragmentData[] sortedByScrollY = fragmentData.toArray(new FragmentData[0]);
-				Arrays.sort(sortedByScrollY);
+                FragmentData[] sortedByScrollY = fragmentData.toArray(new FragmentData[0]);
+                Arrays.sort(sortedByScrollY);
                 FragmentData nextFragment = Arrays.stream(sortedByScrollY)
                         .filter(fragment -> !fragment.isEquipped)
                         .findFirst()
@@ -168,58 +169,58 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                 if (nextFragment == null) {
                     scrollFlowActive = false;
                 } else {
-					int scrollY = (int) (totalScrollHeight * nextFragment.scrollPercentage);
-					// shouldn't be necessary but let's be safe. not sure scrollPercentage will be 0-1
-					int clampedScroll = (int) Math.max(0, Math.min(totalScrollHeight, scrollY));
+                    int scrollY = (int) (totalScrollHeight * nextFragment.scrollPercentage);
+                    // shouldn't be necessary but let's be safe. not sure scrollPercentage will be
+                    // 0-1
+                    int clampedScroll = (int) Math.max(0, Math.min(totalScrollHeight, scrollY));
                     fragmentList.setScrollY(clampedScroll);
-					client.runScript(
-						ScriptID.UPDATE_SCROLLBAR,
-						fragmentScrollbar.getId(),
-						fragmentList.getId(),
-						clampedScroll
-					);
+                    client.runScript(
+                            ScriptID.UPDATE_SCROLLBAR,
+                            fragmentScrollbar.getId(),
+                            fragmentList.getId(),
+                            clampedScroll);
 
-				}
+                }
             }
 
             lastEquippedFragmentsForScrollFlow = equippedFragmentNames;
         }
 
-		showingFragments = true;
-	}
+        showingFragments = true;
+    }
 
     private void newPreset() {
         chatboxPanelManager.openTextInput("Preset name (use the same name to overwrite):")
-            .addCharValidator(FILTERED_CHARS)
-            .onDone((presetName) -> {
-                String trimmed = presetName.trim();
-                if (trimmed.isEmpty()) {
-                    return;
-                }
-                savePreset(trimmed);
-            })
-            .build();
+                .addCharValidator(FILTERED_CHARS)
+                .onDone((presetName) -> {
+                    String trimmed = presetName.trim();
+                    if (trimmed.isEmpty()) {
+                        return;
+                    }
+                    savePreset(trimmed);
+                })
+                .build();
     }
 
     private void savePreset(String presetName) {
         Preset preset = new Preset();
         preset.name = presetName;
         preset.fragments = new HashSet<>(equippedFragmentNames);
-	
+
         for (int i = 0; i < allPresets.size(); i++) {
             if (allPresets.get(i).name.equalsIgnoreCase(presetName)) {
-				if (activePreset == allPresets.get(i)) {
-					activePreset = preset;
-				}
+                if (activePreset == allPresets.get(i)) {
+                    activePreset = preset;
+                }
                 allPresets.set(i, preset);
 
-				persistPresets();
+                persistPresets();
                 return;
             }
         }
 
         allPresets.add(preset);
-		persistPresets();
+        persistPresets();
     }
 
     private void deletePreset() {
@@ -227,52 +228,53 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
             return;
         }
 
-        chatboxPanelManager.openTextInput("Are you sure you want to delete the preset '" + activePreset.name + "'? (y/n)")
-            .addCharValidator(FILTERED_CHARS)
-            .onDone((presetName) -> {
-                String trimmed = presetName.trim();
-                if (trimmed.isEmpty()) {
-                    return;
-                }
-                if (trimmed.toLowerCase().startsWith("y")) {
-                    allPresets.remove(activePreset);
-                    activePreset = null;
-					persistPresets();
-                }
-            })
-            .build();
+        chatboxPanelManager
+                .openTextInput("Are you sure you want to delete the preset '" + activePreset.name + "'? (y/n)")
+                .addCharValidator(FILTERED_CHARS)
+                .onDone((presetName) -> {
+                    String trimmed = presetName.trim();
+                    if (trimmed.isEmpty()) {
+                        return;
+                    }
+                    if (trimmed.toLowerCase().startsWith("y")) {
+                        allPresets.remove(activePreset);
+                        activePreset = null;
+                        persistPresets();
+                    }
+                })
+                .build();
     }
 
-	private void loadPersistedPresets() {
-		String json = configManager.getConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
-				ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS);
-		if (json == null || json.isEmpty()) {
-			allPresets = new ArrayList<>();
-		} else {
-			allPresets = gson.fromJson(json, PRESET_LIST_TYPE);
-		}
-	}
+    private void loadPersistedPresets() {
+        String json = configManager.getConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
+                ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS);
+        if (json == null || json.isEmpty()) {
+            allPresets = new ArrayList<>();
+        } else {
+            allPresets = gson.fromJson(json, PRESET_LIST_TYPE);
+        }
+    }
 
-	private void persistPresets() {
-		String json = gson.toJson(allPresets, PRESET_LIST_TYPE);
-		configManager.setConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
-				ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS, json);
-	}
+    private void persistPresets() {
+        String json = gson.toJson(allPresets, PRESET_LIST_TYPE);
+        configManager.setConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
+                ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS, json);
+    }
 
-	@Override
-	public MouseEvent mousePressed(MouseEvent mouseEvent) {
-		if (!showingFragments)
-			return mouseEvent;
-		if (mouseEvent.getButton() != 1)
-			return mouseEvent;
-		if (newPresetButtonBounds == null)
-			return mouseEvent;
+    @Override
+    public MouseEvent mousePressed(MouseEvent mouseEvent) {
+        if (!showingFragments)
+            return mouseEvent;
+        if (mouseEvent.getButton() != 1)
+            return mouseEvent;
+        if (newPresetButtonBounds == null)
+            return mouseEvent;
 
-		if (newPresetButtonBounds.contains(mouseEvent.getPoint())) {
-			newPreset();
-			mouseEvent.consume();
-			return mouseEvent;
-		}
+        if (newPresetButtonBounds.contains(mouseEvent.getPoint())) {
+            newPreset();
+            mouseEvent.consume();
+            return mouseEvent;
+        }
 
         if (deletePresetButtonBounds != null && deletePresetButtonBounds.contains(mouseEvent.getPoint())) {
             deletePreset();
@@ -280,53 +282,53 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
             return mouseEvent;
         }
 
-		for (Preset p : allPresets) {
-			if (p.renderedBounds == null)
-				continue;
-			if (p.renderedBounds.contains(mouseEvent.getPoint())) {
-				activePreset = p;
+        for (Preset p : allPresets) {
+            if (p.renderedBounds == null)
+                continue;
+            if (p.renderedBounds.contains(mouseEvent.getPoint())) {
+                activePreset = p;
                 scrollFlowActive = true; // TODO: make this configurable
                 lastEquippedFragmentsForScrollFlow = null;
-				mouseEvent.consume();
-				return mouseEvent;
-			}
-		}
+                mouseEvent.consume();
+                return mouseEvent;
+            }
+        }
 
-		return mouseEvent;
-	}
+        return mouseEvent;
+    }
 
-	@Override
-	public MouseEvent mouseClicked(MouseEvent mouseEvent) {
-		return mouseEvent;
-	}
+    @Override
+    public MouseEvent mouseClicked(MouseEvent mouseEvent) {
+        return mouseEvent;
+    }
 
-	@Override
-	public MouseEvent mouseReleased(MouseEvent mouseEvent) {
-		return mouseEvent;
-	}
+    @Override
+    public MouseEvent mouseReleased(MouseEvent mouseEvent) {
+        return mouseEvent;
+    }
 
-	@Override
-	public MouseEvent mouseEntered(MouseEvent mouseEvent) {
-		return mouseEvent;
-	}
+    @Override
+    public MouseEvent mouseEntered(MouseEvent mouseEvent) {
+        return mouseEvent;
+    }
 
-	@Override
-	public MouseEvent mouseExited(MouseEvent mouseEvent) {
-		return mouseEvent;
-	}
+    @Override
+    public MouseEvent mouseExited(MouseEvent mouseEvent) {
+        return mouseEvent;
+    }
 
-	@Override
-	public MouseEvent mouseDragged(MouseEvent mouseEvent) {
-		return mouseEvent;
-	}
+    @Override
+    public MouseEvent mouseDragged(MouseEvent mouseEvent) {
+        return mouseEvent;
+    }
 
-	@Override
-	public MouseEvent mouseMoved(MouseEvent mouseEvent) {
-		return mouseEvent;
-	}
+    @Override
+    public MouseEvent mouseMoved(MouseEvent mouseEvent) {
+        return mouseEvent;
+    }
 
-	@Provides
-	ShatteredRelicsFragmentPresetsConfig provideConfig(ConfigManager configManager) {
-		return configManager.getConfig(ShatteredRelicsFragmentPresetsConfig.class);
-	}
+    @Provides
+    ShatteredRelicsFragmentPresetsConfig provideConfig(ConfigManager configManager) {
+        return configManager.getConfig(ShatteredRelicsFragmentPresetsConfig.class);
+    }
 }

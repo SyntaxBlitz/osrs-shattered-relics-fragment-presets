@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.client.ui.overlay.*;
-import net.runelite.client.ui.overlay.components.TextComponent;
 
 import java.awt.*;
 
@@ -42,7 +41,8 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
     }
 
     private void renderListOverlay(Graphics2D graphics) {
-        if (plugin.suppressFilterOverlay) return;
+        if (plugin.suppressFilterOverlay)
+            return;
 
         for (FragmentData d : plugin.fragmentData) {
             Rectangle intersection = plugin.fragmentListBounds.intersection(d.widgetBounds);
@@ -75,7 +75,8 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
                 break;
             }
         }
-        // little yucky here since we weren't using activePreset before but.. I don't care
+        // little yucky here since we weren't using activePreset before but.. I don't
+        // care
         if (plugin.activePreset == null || plugin.fragmentData.size() != plugin.activePreset.fragments.size()) {
             allFragmentsEquipped = false;
         }

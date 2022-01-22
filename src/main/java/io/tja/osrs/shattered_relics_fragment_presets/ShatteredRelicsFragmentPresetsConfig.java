@@ -2,7 +2,6 @@ package io.tja.osrs.shattered_relics_fragment_presets;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
 
 @ConfigGroup("io.tja.osrs.shattered_relics_fragment_presets.v1")
 public interface ShatteredRelicsFragmentPresetsConfig extends Config

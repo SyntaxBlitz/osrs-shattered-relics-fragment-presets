@@ -2,19 +2,14 @@ package io.tja.osrs.shattered_relics_fragment_presets;
 
 import com.google.inject.Inject;
 import net.runelite.api.Client;
-import net.runelite.api.MenuAction;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.*;
 import net.runelite.client.ui.overlay.components.LineComponent;
-import net.runelite.client.ui.overlay.components.PanelComponent;
-import net.runelite.client.ui.overlay.components.TextComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import static net.runelite.client.ui.overlay.OverlayManager.OPTION_CONFIGURE;
 
 public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPanel {
 
@@ -85,9 +80,7 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         renderPresetSidebar(graphics);
         panelComponent.setPreferredLocation(new Point(
                 plugin.fragmentWindowBounds.x - SIDEBAR_WIDTH - SIDEBAR_RIGHT_MARGIN,
-                plugin.fragmentWindowBounds.y + SIDEBAR_TOP_MARGIN
-            )
-        );
+                plugin.fragmentWindowBounds.y + SIDEBAR_TOP_MARGIN));
 
         plugin.newPresetButtonBounds = newPresetButtonComponent.getBounds();
         plugin.deletePresetButtonBounds = deletePresetButtonComponent.getBounds();
