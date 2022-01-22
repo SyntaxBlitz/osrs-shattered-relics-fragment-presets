@@ -68,18 +68,8 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
     }
 
     private void renderFragmentOverlay(Graphics2D graphics) {
-        boolean allFragmentsEquipped = true;
-        for (FragmentData d : plugin.fragmentData) {
-            if (!d.isEquipped) {
-                allFragmentsEquipped = false;
-                break;
-            }
-        }
-        // little yucky here since we weren't using activePreset before but.. I don't
-        // care
-        if (plugin.activePreset == null || plugin.fragmentData.size() != plugin.activePreset.fragments.size()) {
-            allFragmentsEquipped = false;
-        }
+        boolean allFragmentsEquipped = plugin.activePreset != null
+                && plugin.equippedFragmentNames.equals(plugin.activePreset.fragments);
 
         for (Rectangle r : plugin.presetEquippedFragmentBounds) {
             if (allFragmentsEquipped) {
