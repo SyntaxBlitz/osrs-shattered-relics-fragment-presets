@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import jdk.internal.joptsimple.internal.Strings;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.ScriptID;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.config.ConfigManager;
@@ -64,6 +65,8 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     public static final IntPredicate FILTERED_CHARS = c -> "</>:".indexOf(c) == -1;
 
 	public boolean showingFragments = false;
+	private boolean scrollFlowActive = false;
+	private Set<String> lastEquippedFragmentsForScrollFlow = null;
 	public Rectangle fragmentWindowBounds = null;
 	public Rectangle fragmentListBounds = null;
 	public Rectangle fragmentScrollbarInnerBounds = null;
@@ -132,6 +135,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		if (fragmentWindow == null) {
 			activePreset = null;
 			showingFragments = false;
+			scrollFlowActive = false;
 			return;
 		}
 
@@ -175,6 +179,35 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		}
 
 		fragmentData = theseFragmentData;
+
+        if (scrollFlowActive && activePreset != null) { // activePreset should always be non-null here but good to check
+            if (!equippedFragmentNames.equals(lastEquippedFragmentsForScrollFlow)) {
+                // scroll to the next one
+				FragmentData[] sortedByScrollY = fragmentData.toArray(new FragmentData[0]);
+				Arrays.sort(sortedByScrollY);
+                FragmentData nextFragment = Arrays.stream(sortedByScrollY)
+                        .filter(fragment -> !fragment.isEquipped)
+                        .findFirst()
+                        .orElse(null);
+                if (nextFragment == null) {
+                    scrollFlowActive = false;
+                } else {
+					int scrollY = (int) (totalScrollHeight * nextFragment.scrollPercentage);
+					// shouldn't be necessary but let's be safe. not sure scrollPercentage will be 0-1
+					int clampedScroll = (int) Math.max(0, Math.min(totalScrollHeight, scrollY));
+                    fragmentList.setScrollY(clampedScroll);
+					client.runScript(
+						ScriptID.UPDATE_SCROLLBAR,
+						fragmentScrollbar.getId(),
+						fragmentList.getId(),
+						clampedScroll
+					);
+
+				}
+            }
+
+            lastEquippedFragmentsForScrollFlow = equippedFragmentNames;
+        }
 
 		showingFragments = true;
 	}
@@ -283,6 +316,8 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 				continue;
 			if (p.renderedBounds.contains(mouseEvent.getPoint())) {
 				activePreset = p;
+                scrollFlowActive = true; // TODO: make this configurable
+                lastEquippedFragmentsForScrollFlow = null;
 				mouseEvent.consume();
 				return mouseEvent;
 			}
@@ -328,9 +363,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 }
 
 // TODO:
-// - auto scroll to fragment (check that empty preset doesn't break)
-//   - turn on flow when clicking on a preset, even if it's alerady selected.
-// whenever equipped presets change, scroll to next one. flow state ends when
-// all are equipped or when the widget is closed.
 // - fix overlay when filter list is up
+// - fix: acts like all are equipped even if fragments are filtered
 // check all TODOs
