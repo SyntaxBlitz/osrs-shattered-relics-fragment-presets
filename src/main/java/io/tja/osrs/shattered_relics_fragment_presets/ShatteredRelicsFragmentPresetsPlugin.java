@@ -130,6 +130,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 
 		Widget fragmentWindow = client.getWidget(735, 1);
 		if (fragmentWindow == null) {
+			activePreset = null;
 			showingFragments = false;
 			return;
 		}
@@ -331,7 +332,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 //   - turn on flow when clicking on a preset, even if it's alerady selected.
 // whenever equipped presets change, scroll to next one. flow state ends when
 // all are equipped or when the widget is closed.
-// - clear active preset when closing the widget
 // - fix overlay when filter list is up
 // - somehow indicate how many fragments are in the preset?
 //   - maybe show
