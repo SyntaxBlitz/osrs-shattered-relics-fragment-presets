@@ -48,20 +48,28 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
         // graphics.fillRect(plugin.fragmentListBounds.x, plugin.fragmentListBounds.y,
         // plugin.fragmentListBounds.width, plugin.fragmentListBounds.height);
 
+        boolean allFragmentsEquipped = true;
+        for (FragmentData d : plugin.fragmentData) {
+            if (!d.isEquipped) {
+                allFragmentsEquipped = false;
+                break;
+            }
+        }
+
         for (FragmentData d : plugin.fragmentData) {
             Rectangle intersection = plugin.fragmentListBounds.intersection(d.widgetBounds);
 
             if (d.isEquipped) {
                 graphics.setColor(new Color(0, 255, 0, 20));
             } else {
-                graphics.setColor(new Color(255, 255, 0, 50));
+                graphics.setColor(new Color(0, 255, 255, 50));
             }
             graphics.fillRect(intersection.x, intersection.y, intersection.width, intersection.height);
 
             if (d.isEquipped) {
                 graphics.setColor(new Color(0, 255, 0, 50));
             } else {
-                graphics.setColor(new Color(255, 255, 0, 150));
+                graphics.setColor(new Color(0, 255, 255, 150));
             }
 
             graphics.fillRect(plugin.fragmentScrollbarInnerBounds.x,
@@ -71,7 +79,11 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
         }
 
         for (Rectangle r : plugin.presetEquippedFragmentBounds) {
-            graphics.setColor(new Color(0, 255, 0, 100));
+            if (allFragmentsEquipped) {
+                graphics.setColor(new Color(0, 255, 0, 100));
+            } else {
+                graphics.setColor(new Color(255, 255, 0, 100));
+            }
             graphics.fillRect(r.x, r.y, r.width, r.height);
         }
     }

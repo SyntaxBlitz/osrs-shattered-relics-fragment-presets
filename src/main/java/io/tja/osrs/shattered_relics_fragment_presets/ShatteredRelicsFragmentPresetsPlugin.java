@@ -333,6 +333,4 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 // whenever equipped presets change, scroll to next one. flow state ends when
 // all are equipped or when the widget is closed.
 // - fix overlay when filter list is up
-// - somehow indicate how many fragments are in the preset?
-//   - maybe show
 // check all TODOs
