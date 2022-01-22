@@ -103,31 +103,8 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		overlayManager.remove(sidebarOverlay);
 	}
 
-	private String getWidgetString(Widget w) {
-		// maybe could also use getNestedChildren
-		if (w == null)
-			return "";
-		String ws = "";
-		if (!w.getText().isEmpty())
-			ws += w.getText() + "\n";
-		// Widget[] children = w.getStaticChildren();
-		Widget[] children = w.getDynamicChildren();
-		if (children == null)
-			return ws;
-
-		for (Widget child : children) {
-			ws += getWidgetString(child) + "\n";
-		}
-		return ws;
-	}
-
 	@Subscribe
 	public void onClientTick(ClientTick event) {
-//		 Widget devWidget = client.getWidget(735, 9);
-//		 if (devWidget != null)
-//		 	devBounds = devWidget.getBounds();
-//		 devBounds = null;
-
 		Widget fragmentWindow = client.getWidget(735, 1);
 		if (fragmentWindow == null) {
 			activePreset = null;
@@ -137,7 +114,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		}
 
 		Widget showFiltersButton = client.getWidget(735, 9);
-		suppressFilterOverlay = getWidgetString(showFiltersButton).trim().equals(("Hide Filters"));
+		suppressFilterOverlay = showFiltersButton.getText().equals(("Hide Filters"));
 
 		Widget fragmentList = client.getWidget(735, 17);
 		Widget fragmentScrollbar = client.getWidget(735, 18);
@@ -166,13 +143,11 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		Widget[] fragmentListSubWidgets = fragmentList.getDynamicChildren();
 		for (int i = 0; i < fragmentListSubWidgets.length; i++) {
 			Widget subWidget = fragmentListSubWidgets[i];
-			String widgetString = getWidgetString(subWidget); // TODO: don't use getWidgetString here
-			if (activePreset != null && activePreset.fragments.contains(widgetString.trim())) {
+			if (activePreset != null && activePreset.fragments.contains(subWidget.getText())) {
 				Widget containerSubWidget = fragmentListSubWidgets[i - 7];
 				FragmentData fragmentData = new FragmentData();
 				fragmentData.widgetBounds = containerSubWidget.getBounds();
-				fragmentData.isEquipped = equippedFragmentNames.contains(widgetString.trim()); // TODO may not need
-				// these trims after getting rid of getWidgetString
+				fragmentData.isEquipped = equippedFragmentNames.contains(subWidget.getText());
 				fragmentData.scrollPercentage = containerSubWidget.getRelativeY() / totalScrollHeight;
 
 				theseFragmentData.add(fragmentData);
@@ -272,10 +247,8 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		String json = configManager.getConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
 				ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS);
 		if (json == null || json.isEmpty()) {
-			log.info("null json");
 			allPresets = new ArrayList<>();
 		} else {
-			log.info("got json " + json);
 			allPresets = gson.fromJson(json, PRESET_LIST_TYPE);
 		}
 	}
@@ -284,11 +257,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		String json = gson.toJson(allPresets, PRESET_LIST_TYPE);
 		configManager.setConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
 				ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS, json);
-
-		String json2 = configManager.getConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
-				ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS);
-		log.info("persisted " + json2);
-
 	}
 
 	@Override
