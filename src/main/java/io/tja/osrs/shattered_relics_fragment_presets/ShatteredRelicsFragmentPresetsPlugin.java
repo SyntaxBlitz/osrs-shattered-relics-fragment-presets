@@ -287,7 +287,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                 continue;
             if (p.renderedBounds.contains(mouseEvent.getPoint())) {
                 activePreset = p;
-                scrollFlowActive = true; // TODO: make this configurable
+                scrollFlowActive = true;
                 lastEquippedFragmentsForScrollFlow = null;
                 mouseEvent.consume();
                 return mouseEvent;
