@@ -4,16 +4,10 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
-@ConfigGroup("example")
+@ConfigGroup("io.tja.osrs.shattered_relics_fragment_presets.v1")
 public interface ShatteredRelicsFragmentPresetsConfig extends Config
 {
-	@ConfigItem(
-		keyName = "greeting",
-		name = "Welcome Greeting",
-		description = "The message to show to the user when they login"
-	)
-	default String greeting()
-	{
-		return "Hello";
-	}
+	public final String CONFIG_GROUP = "io.tja.osrs.shattered_relics_fragment_presets.v1";
+
+	public final String ALL_PRESETS = "all_presets";
 }

@@ -1,7 +1,11 @@
 package io.tja.osrs.shattered_relics_fragment_presets;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
 import javax.inject.Inject;
+
+import jdk.internal.joptsimple.internal.Strings;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.events.*;
@@ -18,12 +22,12 @@ import net.runelite.client.util.Text;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
@@ -48,8 +52,14 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 	@Inject
 	private MouseManager mouseManager;
 
-    @Inject
-    private ChatboxPanelManager chatboxPanelManager;
+	@Inject
+	private ChatboxPanelManager chatboxPanelManager;
+
+	@Inject
+	private Gson gson;
+
+	@Inject
+	private ConfigManager configManager;
 
     public static final IntPredicate FILTERED_CHARS = c -> "</>:".indexOf(c) == -1;
 
@@ -70,29 +80,12 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 	private int tickTimer = 0;
 
 	public List<Preset> allPresets = new ArrayList<>();
+	public static Type PRESET_LIST_TYPE = new TypeToken<List<Preset>>() {}.getType();
 	public Preset activePreset;
 
 	@Override
 	protected void startUp() throws Exception {
-		Preset p = new Preset();
-		p.name = "Gathering stuff";
-		p.fragments = new HashSet<>();
-		p.fragments.add("Message In A Bottle");
-		p.fragments.add("Rock Solid");
-		p.fragments.add("Molten Miner");
-		p.fragments.add("Chef's Catch");
-
-		Preset p2 = new Preset();
-		p2.name = "Combat";
-		p2.fragments = new HashSet<>();
-		p2.fragments.add("Unholy Warrior");
-		p2.fragments.add("Unholy Ranger");
-		p2.fragments.add("Unholy Wizard");
-
-		allPresets.add(p);
-		allPresets.add(p2);
-
-//		activePreset = p;
+		loadPersistedPresets();
 
 		mouseManager.registerMouseListener(this);
 
@@ -209,11 +202,14 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 					activePreset = preset;
 				}
                 allPresets.set(i, preset);
+
+				persistPresets();
                 return;
             }
         }
 
         allPresets.add(preset);
+		persistPresets();
     }
 
     private void deletePreset() {
@@ -231,10 +227,34 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                 if (trimmed.toLowerCase().startsWith("y")) {
                     allPresets.remove(activePreset);
                     activePreset = null;
+					persistPresets();
                 }
             })
             .build();
     }
+
+	private void loadPersistedPresets() {
+		String json = configManager.getConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
+				ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS);
+		if (json == null || json.isEmpty()) {
+			log.info("null json");
+			allPresets = new ArrayList<>();
+		} else {
+			log.info("got json " + json);
+			allPresets = gson.fromJson(json, PRESET_LIST_TYPE);
+		}
+	}
+
+	private void persistPresets() {
+		String json = gson.toJson(allPresets, PRESET_LIST_TYPE);
+		configManager.setConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
+				ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS, json);
+
+		String json2 = configManager.getConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
+				ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS);
+		log.info("persisted " + json2);
+
+	}
 
 	@Override
 	public MouseEvent mousePressed(MouseEvent mouseEvent) {
@@ -307,7 +327,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 }
 
 // TODO:
-// - persistent presets
 // - auto scroll to fragment (check that empty preset doesn't break)
 //   - turn on flow when clicking on a preset, even if it's alerady selected.
 // whenever equipped presets change, scroll to next one. flow state ends when

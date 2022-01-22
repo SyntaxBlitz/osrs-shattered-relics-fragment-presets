@@ -6,5 +6,5 @@ import java.util.Set;
 public class Preset {
     public Set<String> fragments;
     public String name;
-    public Rectangle renderedBounds;
+    public transient Rectangle renderedBounds;
 }
