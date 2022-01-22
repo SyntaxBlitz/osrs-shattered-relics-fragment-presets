@@ -75,6 +75,10 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
                 break;
             }
         }
+        // little yucky here since we weren't using activePreset before but.. I don't care
+        if (plugin.activePreset == null || plugin.fragmentData.size() != plugin.activePreset.fragments.size()) {
+            allFragmentsEquipped = false;
+        }
 
         for (Rectangle r : plugin.presetEquippedFragmentBounds) {
             if (allFragmentsEquipped) {

@@ -81,8 +81,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 	public Rectangle newPresetButtonBounds; // set by overlay
     public Rectangle deletePresetButtonBounds; // set by overlay
 
-	private int tickTimer = 0;
-
 	public List<Preset> allPresets = new ArrayList<>();
 	public static Type PRESET_LIST_TYPE = new TypeToken<List<Preset>>() {}.getType();
 	public Preset activePreset;
@@ -125,8 +123,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 
 	@Subscribe
 	public void onClientTick(ClientTick event) {
-		tickTimer++;
-
 //		 Widget devWidget = client.getWidget(735, 9);
 //		 if (devWidget != null)
 //		 	devBounds = devWidget.getBounds();
@@ -366,7 +362,3 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		return configManager.getConfig(ShatteredRelicsFragmentPresetsConfig.class);
 	}
 }
-
-// TODO:
-// - fix: acts like all are equipped even if fragments are filtered
-// check all TODOs
