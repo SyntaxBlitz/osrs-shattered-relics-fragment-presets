@@ -228,22 +228,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
             return;
         }
 
-//        chatboxPanelManager
-//                .openTextInput("Are you sure you want to delete the preset '" + activePreset.name + "'? (y/n)")
-//                .addCharValidator(FILTERED_CHARS)
-//                .onDone((presetName) -> {
-//                    String trimmed = presetName.trim();
-//                    if (trimmed.isEmpty()) {
-//                        return;
-//                    }
-//                    if (trimmed.toLowerCase().startsWith("y")) {
-//                        allPresets.remove(activePreset);
-//                        activePreset = null;
-//                        persistPresets();
-//                    }
-//                })
-//                .build();
-
         chatboxPanelManager
                 .openTextMenuInput("Are you sure you want to delete the preset '" + activePreset.name + "'?")
                 .option("Delete", () -> {
