@@ -1,13 +1,13 @@
-package com.example;
+package io.tja.osrs.shattered_relics_fragment_presets;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class ExamplePluginTest
+public class ShatteredRelicsFragmentPresetsPluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(ExamplePlugin.class);
+		ExternalPluginManager.loadBuiltin(ShatteredRelicsFragmentPresetsPlugin.class);
 		RuneLite.main(args);
 	}
 }
