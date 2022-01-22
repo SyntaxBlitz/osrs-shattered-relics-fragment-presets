@@ -65,6 +65,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 	public Rectangle devBounds = null;
 
 	public Rectangle newPresetButtonBounds; // set by overlay
+    public Rectangle deletePresetButtonBounds; // set by overlay
 
 	private int tickTimer = 0;
 
@@ -91,7 +92,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		allPresets.add(p);
 		allPresets.add(p2);
 
-		activePreset = p;
+//		activePreset = p;
 
 		mouseManager.registerMouseListener(this);
 
@@ -106,38 +107,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		overlayManager.remove(fragmentOverlay);
 		overlayManager.remove(sidebarOverlay);
 	}
-
-	// @Subscribe
-	// public void onGameStateChanged(GameStateChanged gameStateChanged)
-	// {
-	// if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
-	// {
-	// client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Example says " +
-	// config.greeting(), null);
-	// }
-	// }
-
-	// @Subscribe
-	// public void onScriptPreFired(ScriptPreFired event) {
-	// int scriptId = event.getScriptId();
-	// if (scriptId == 4731 || scriptId == 4730 || scriptId == 4731 || scriptId ==
-	// 4671 || scriptId == 4672 || scriptId == 2512 || scriptId == 2513 || scriptId
-	// == 1004 || scriptId == 4730 || scriptId == 4731 || scriptId == 3350 ||
-	// scriptId == 3351 || scriptId == 2100 || scriptId == 2101 || scriptId == 4730
-	// || scriptId == 4731 || scriptId == 4730 || scriptId == 4731 || scriptId ==
-	// 4730 || scriptId == 4731 || scriptId == 4671 || scriptId == 4672 || scriptId
-	// == 2512 || scriptId == 2513 || scriptId == 1004 || scriptId == 4730 ||
-	// scriptId == 4731) return;
-	// if (scriptId == 998 || scriptId == 900 || scriptId == 2250 || scriptId ==
-	// 1972 || scriptId == 100 || scriptId == 1445 || scriptId == 2476) return;
-	//
-	// // sus: 5796, 5795
-	//
-	//// if (scriptId != 5796 && scriptId != 5795) return;
-	//
-	// log.info("script id " + scriptId);
-	//// log.info(event.getScriptEvent());
-	// }
 
 	private String getWidgetString(Widget w) {
 		// maybe could also use getNestedChildren
@@ -156,65 +125,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		}
 		return ws;
 	}
-
-	// @Subscribe
-	// public void onWidgetLoaded(WidgetLoaded event) {
-	// log.info("widget group " + event.getGroupId());
-	// // log.info("widget " + getWidgetString(event.));
-	// // 654: info
-	// // 657: tasks
-	// // 733: unlocks
-	// if (event.getGroupId() == 735) { // fragment screen
-	// log.info("wpx " + Arrays.toString(client.getWidgetPositionsX()));
-	// // client.getWidgetPositionsY();
-	// // 17: left list
-	// Widget w = client.getWidget(735, 17);
-	// log.info("wcl " + w.getCanvasLocation());
-	// log.info("wi " + w.getIndex());
-	// log.info("wox " + w.getOriginalX());
-	// log.info("ncl " + w.getNestedChildren().length);
-	// log.info("scl " + w.getStaticChildren().length);
-	// log.info("dcl " + w.getDynamicChildren().length);
-
-	// log.info("w " + w);
-
-	// log.info("scrollHeight " + w.getScrollHeight());
-	// log.info("scrollWidth " + w.getScrollWidth());
-	// log.info("scrollX " + w.getScrollX());
-	// log.info("scrollY " + w.getScrollY());
-
-	// log.info("relativeX " + w.getRelativeX());
-	// log.info("relativeY " + w.getRelativeY());
-
-	// log.info("bounds " + w.getBounds());
-
-	// // log.info("wi size " + w.getWidgetItems().size());
-
-	// for (Widget w2 : w.getDynamicChildren()) {
-	// if (getWidgetString(w2).contains("Unholy")) {
-	// log.info("w2i " + w.getIndex());
-	// log.info("w2cl " + w.getCanvasLocation());
-	// log.info("w2 relativey " + w2.getBounds() + " " + getWidgetString(w2) + " " +
-	// w2.getRelativeY());
-	// log.info("parent " + w2.getParent());
-	// // log.info("hiding " + getWidgetString(w2));
-	// // w2.setHidden(true);
-	// }
-	// }
-	// // for (int i = 0; i < 10000; i++) {
-	// // Widget w = client.getWidget(735, i);
-	// // if (w != null) {
-	// // log.info(i + ": " + getWidgetString(w));
-	// //// Widget[] nc = w.getNestedChildren();
-	// //// if (nc == null) {
-	// ////
-	// //// } else {
-	// ////
-	// //// }
-	// // }
-	// // }
-	// }
-	// }
 
 	@Subscribe
 	public void onClientTick(ClientTick event) {
@@ -243,7 +153,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 				.collect(Collectors.toSet());
 
 		presetEquippedFragmentBounds = equippedFragmentWidgets.stream()
-				.filter(widget -> activePreset.fragments.contains(Text.removeTags(widget.getName())))
+				.filter(widget -> activePreset != null && activePreset.fragments.contains(Text.removeTags(widget.getName())))
 				.map(widget -> widget.getBounds())
 				.collect(Collectors.toSet());
 
@@ -258,8 +168,8 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 		Widget[] fragmentListSubWidgets = fragmentList.getDynamicChildren();
 		for (int i = 0; i < fragmentListSubWidgets.length; i++) {
 			Widget subWidget = fragmentListSubWidgets[i];
-			String widgetString = getWidgetString(subWidget);
-			if (activePreset.fragments.contains(widgetString.trim())) {
+			String widgetString = getWidgetString(subWidget); // TODO: don't use getWidgetString here
+			if (activePreset != null && activePreset.fragments.contains(widgetString.trim())) {
 				Widget containerSubWidget = fragmentListSubWidgets[i - 7];
 				FragmentData fragmentData = new FragmentData();
 				fragmentData.widgetBounds = containerSubWidget.getBounds();
@@ -279,10 +189,11 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         chatboxPanelManager.openTextInput("Preset name (use the same name to overwrite):")
             .addCharValidator(FILTERED_CHARS)
             .onDone((presetName) -> {
-                if (presetName.isEmpty()) {
+                String trimmed = presetName.trim();
+                if (trimmed.isEmpty()) {
                     return;
                 }
-                savePreset(presetName);
+                savePreset(trimmed);
             })
             .build();
     }
@@ -294,12 +205,35 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 	
         for (int i = 0; i < allPresets.size(); i++) {
             if (allPresets.get(i).name.equalsIgnoreCase(presetName)) {
+				if (activePreset == allPresets.get(i)) {
+					activePreset = preset;
+				}
                 allPresets.set(i, preset);
                 return;
             }
         }
 
         allPresets.add(preset);
+    }
+
+    private void deletePreset() {
+        if (activePreset == null) {
+            return;
+        }
+
+        chatboxPanelManager.openTextInput("Are you sure you want to delete the preset '" + activePreset.name + "'? (y/n)")
+            .addCharValidator(FILTERED_CHARS)
+            .onDone((presetName) -> {
+                String trimmed = presetName.trim();
+                if (trimmed.isEmpty()) {
+                    return;
+                }
+                if (trimmed.toLowerCase().startsWith("y")) {
+                    allPresets.remove(activePreset);
+                    activePreset = null;
+                }
+            })
+            .build();
     }
 
 	@Override
@@ -316,6 +250,12 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 			mouseEvent.consume();
 			return mouseEvent;
 		}
+
+        if (deletePresetButtonBounds != null && deletePresetButtonBounds.contains(mouseEvent.getPoint())) {
+            deletePreset();
+            mouseEvent.consume();
+            return mouseEvent;
+        }
 
 		for (Preset p : allPresets) {
 			if (p.renderedBounds == null)
@@ -367,12 +307,13 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 }
 
 // TODO:
-// - "new preset"
-// - "delete preset"
 // - persistent presets
-// - auto scroll to fragment
-// - turn on flow when clicking on a preset, even if it's alerady selected.
+// - auto scroll to fragment (check that empty preset doesn't break)
+//   - turn on flow when clicking on a preset, even if it's alerady selected.
 // whenever equipped presets change, scroll to next one. flow state ends when
 // all are equipped or when the widget is closed.
-// fix overlay when filter list is up
-// somehow indicate how many fragments are in the preset?
+// - clear active preset when closing the widget
+// - fix overlay when filter list is up
+// - somehow indicate how many fragments are in the preset?
+//   - maybe show
+// check all TODOs

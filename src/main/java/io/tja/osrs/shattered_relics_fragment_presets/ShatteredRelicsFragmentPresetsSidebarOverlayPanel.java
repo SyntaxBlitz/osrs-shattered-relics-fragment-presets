@@ -24,6 +24,7 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
     private final TitleComponent titleComponent;
     private final LineComponent spacer;
     private final LineComponent newPresetButtonComponent;
+    private final LineComponent deletePresetButtonComponent;
 
     private final int SIDEBAR_WIDTH = 120;
     private final int SIDEBAR_RIGHT_MARGIN = 12;
@@ -40,7 +41,8 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         panelComponent.setPreferredSize(new Dimension(SIDEBAR_WIDTH, 0));
         titleComponent = TitleComponent.builder().text("Presets").build();
         spacer = LineComponent.builder().build();
-        newPresetButtonComponent = LineComponent.builder().left("+ New Preset").build();
+        newPresetButtonComponent = LineComponent.builder().left("+ Save as preset").build();
+        deletePresetButtonComponent = LineComponent.builder().left("- Delete this preset").build();
 
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ALWAYS_ON_TOP);
@@ -88,23 +90,26 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         );
 
         plugin.newPresetButtonBounds = newPresetButtonComponent.getBounds();
+        plugin.deletePresetButtonBounds = deletePresetButtonComponent.getBounds();
 
         return super.render(graphics);
     }
 
     private void renderPresetSidebar(Graphics2D graphics) {
-        // final FontMetrics metrics = graphics.getFontMetrics();
-        // final int textDescent = metrics.getDescent();
-        // final int textHeight = metrics.getHeight();
-
-        // newPresetButtonComponent.setPreferredSize(new Dimension(0, textHeight + 100));
-        
         panelComponent.getChildren().add(titleComponent);
         panelComponent.getChildren().add(spacer);
         panelComponent.getChildren().add(newPresetButtonComponent);
+        if (!plugin.allPresets.isEmpty()) {
+            if (plugin.activePreset == null) {
+                deletePresetButtonComponent.setLeftColor(new Color(192, 192, 192, 255));
+            } else {
+                deletePresetButtonComponent.setLeftColor(new Color(255, 255, 255, 255));
+            }
+            panelComponent.getChildren().add(deletePresetButtonComponent);
+        }
         panelComponent.getChildren().add(spacer);
 
-        for (Preset p : presetButtonComponents.keySet()) {
+        for (Preset p : plugin.allPresets) {
             LineComponent c = presetButtonComponents.get(p);
             if (p == plugin.activePreset) {
                 c.setLeftColor(new Color(0, 255, 0, 255));
@@ -114,28 +119,5 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
             panelComponent.getChildren().add(c);
             p.renderedBounds = c.getBounds();
         }
-
-//        int sidebarWidth = 100;
-//        int sidebarRightMargin = 12;
-//        int sidebarPadding = 12;
-//        int sidebarTopMargin = 4;
-//        int sidebarHeight = 200; // todo calculate
-//        Rectangle sidebarBox = new Rectangle(plugin.fragmentWindowBounds.x - sidebarWidth - sidebarRightMargin,
-//                plugin.fragmentWindowBounds.y + sidebarTopMargin,
-//                sidebarWidth,
-//                sidebarHeight);
-//
-//        graphics.setColor(new Color(0, 0, 0, 200));
-//        graphics.fillRect(sidebarBox.x, sidebarBox.y, sidebarBox.width, sidebarBox.height);
-//
-//        // render "new preset" button
-//        final FontMetrics metrics = graphics.getFontMetrics();
-//        final int textDescent = metrics.getDescent();
-//        final int textHeight = metrics.getHeight();
-//
-//        net.runelite.client.ui.overlay.components.TextComponent textComponent = new TextComponent();
-//        textComponent.setText("+ New preset");
-//        textComponent.setPosition(new Point(sidebarBox.x + sidebarPadding, sidebarBox.y + sidebarPadding + textHeight));
-//        textComponent.render(graphics);
     }
 }
