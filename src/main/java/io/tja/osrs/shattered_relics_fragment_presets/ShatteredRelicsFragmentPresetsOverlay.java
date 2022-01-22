@@ -35,26 +35,14 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
             return null;
         }
 
+        renderListOverlay(graphics);
         renderFragmentOverlay(graphics);
 
         return null;
     }
 
-    private void renderFragmentOverlay(Graphics2D graphics) {
-        // todo: don't render if filters are shown
-
-        // OverlayUtil.renderPolygon(graphics, , );
-        // graphics.setColor(new Color(255, 0, 0, 50));
-        // graphics.fillRect(plugin.fragmentListBounds.x, plugin.fragmentListBounds.y,
-        // plugin.fragmentListBounds.width, plugin.fragmentListBounds.height);
-
-        boolean allFragmentsEquipped = true;
-        for (FragmentData d : plugin.fragmentData) {
-            if (!d.isEquipped) {
-                allFragmentsEquipped = false;
-                break;
-            }
-        }
+    private void renderListOverlay(Graphics2D graphics) {
+        if (plugin.suppressFilterOverlay) return;
 
         for (FragmentData d : plugin.fragmentData) {
             Rectangle intersection = plugin.fragmentListBounds.intersection(d.widgetBounds);
@@ -76,6 +64,16 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
                     (int) (plugin.fragmentScrollbarInnerBounds.y
                             + plugin.fragmentScrollbarInnerBounds.height * d.scrollPercentage),
                     plugin.fragmentScrollbarInnerBounds.width, 2);
+        }
+    }
+
+    private void renderFragmentOverlay(Graphics2D graphics) {
+        boolean allFragmentsEquipped = true;
+        for (FragmentData d : plugin.fragmentData) {
+            if (!d.isEquipped) {
+                allFragmentsEquipped = false;
+                break;
+            }
         }
 
         for (Rectangle r : plugin.presetEquippedFragmentBounds) {

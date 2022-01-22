@@ -67,6 +67,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 	public boolean showingFragments = false;
 	private boolean scrollFlowActive = false;
 	private Set<String> lastEquippedFragmentsForScrollFlow = null;
+	public boolean suppressFilterOverlay = false;
 	public Rectangle fragmentWindowBounds = null;
 	public Rectangle fragmentListBounds = null;
 	public Rectangle fragmentScrollbarInnerBounds = null;
@@ -126,10 +127,10 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 	public void onClientTick(ClientTick event) {
 		tickTimer++;
 
-		// Widget devWidget = client.getWidget(735, 1);
-		// if (devWidget != null)
-		// devBounds = devWidget.getBounds();
-		// devBounds = null;
+//		 Widget devWidget = client.getWidget(735, 9);
+//		 if (devWidget != null)
+//		 	devBounds = devWidget.getBounds();
+//		 devBounds = null;
 
 		Widget fragmentWindow = client.getWidget(735, 1);
 		if (fragmentWindow == null) {
@@ -138,6 +139,9 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 			scrollFlowActive = false;
 			return;
 		}
+
+		Widget showFiltersButton = client.getWidget(735, 9);
+		suppressFilterOverlay = getWidgetString(showFiltersButton).trim().equals(("Hide Filters"));
 
 		Widget fragmentList = client.getWidget(735, 17);
 		Widget fragmentScrollbar = client.getWidget(735, 18);
@@ -171,7 +175,8 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 				Widget containerSubWidget = fragmentListSubWidgets[i - 7];
 				FragmentData fragmentData = new FragmentData();
 				fragmentData.widgetBounds = containerSubWidget.getBounds();
-				fragmentData.isEquipped = equippedFragmentNames.contains(widgetString.trim());
+				fragmentData.isEquipped = equippedFragmentNames.contains(widgetString.trim()); // TODO may not need
+				// these trims after getting rid of getWidgetString
 				fragmentData.scrollPercentage = containerSubWidget.getRelativeY() / totalScrollHeight;
 
 				theseFragmentData.add(fragmentData);
@@ -363,6 +368,5 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 }
 
 // TODO:
-// - fix overlay when filter list is up
 // - fix: acts like all are equipped even if fragments are filtered
 // check all TODOs
