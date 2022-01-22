@@ -24,12 +24,6 @@ public class ShatteredRelicsFragmentPresetsOverlay extends Overlay {
 
     @Override
     public Dimension render(Graphics2D graphics) {
-        if (plugin.devBounds != null) {
-            graphics.setColor(new Color(255, 0, 0, 150));
-
-            graphics.fillRect(plugin.devBounds.x, plugin.devBounds.y, plugin.devBounds.width, plugin.devBounds.height);
-        }
-
         if (!plugin.showingFragments) {
             return null;
         }

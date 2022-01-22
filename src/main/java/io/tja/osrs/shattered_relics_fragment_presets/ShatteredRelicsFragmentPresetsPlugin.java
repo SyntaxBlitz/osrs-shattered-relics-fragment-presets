@@ -75,8 +75,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     public Set<Rectangle> presetEquippedFragmentBounds;
     public Set<String> equippedFragmentNames = new HashSet<>();
 
-    public Rectangle devBounds = null;
-
     public Rectangle newPresetButtonBounds; // set by overlay
     public Rectangle deletePresetButtonBounds; // set by overlay
 
