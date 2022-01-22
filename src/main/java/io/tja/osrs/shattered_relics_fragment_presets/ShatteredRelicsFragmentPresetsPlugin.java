@@ -32,7 +32,7 @@ import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 @Slf4j
-@PluginDescriptor(name = "Shattered Relics Fragment Presets")
+@PluginDescriptor(name = "Fragment Presets")
 public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements MouseListener {
     @Inject
     private Client client;
