@@ -1,4 +1,4 @@
-package io.tja.osrs.shattered_relics_fragment_presets;
+package net.runelite.client.plugins.shattered_relics_fragment_presetsb;
 
 import com.google.inject.Inject;
 import net.runelite.api.Client;
@@ -24,6 +24,7 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
     private final int SIDEBAR_WIDTH = 120;
     private final int SIDEBAR_RIGHT_MARGIN = 12;
     private final int SIDEBAR_TOP_MARGIN = 4;
+    private final int SIDEBAR_X_ADJUSTMENT = 620;
 
     private final Map<Preset, LineComponent> presetButtonComponents = new HashMap<>();
 
@@ -79,7 +80,7 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
 
         renderPresetSidebar(graphics);
         panelComponent.setPreferredLocation(new Point(
-                plugin.fragmentWindowBounds.x - SIDEBAR_WIDTH - SIDEBAR_RIGHT_MARGIN,
+                plugin.fragmentWindowBounds.x - SIDEBAR_WIDTH - SIDEBAR_RIGHT_MARGIN + SIDEBAR_X_ADJUSTMENT,
                 plugin.fragmentWindowBounds.y + SIDEBAR_TOP_MARGIN));
 
         plugin.newPresetButtonBounds = newPresetButtonComponent.getBounds();
