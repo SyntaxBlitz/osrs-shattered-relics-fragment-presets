@@ -10,6 +10,7 @@ import net.runelite.api.Client;
 import net.runelite.api.ScriptID;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
@@ -32,7 +33,7 @@ import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 @Slf4j
-@PluginDescriptor(name = "Fragment Presets")
+@PluginDescriptor(name = "Fragment Presets1")
 public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements MouseListener {
     @Inject
     private Client client;
@@ -287,6 +288,19 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         }
 
         return mouseEvent;
+    }
+
+    @Subscribe
+    public void onWidgetLoaded(WidgetLoaded event) {
+        switch (event.getGroupId()) {
+            case WidgetID.FIXED_VIEWPORT_GROUP_ID:
+                this.sidebarOverlay.setIsFixedViewport(true);
+                break;
+            case WidgetID.RESIZABLE_VIEWPORT_OLD_SCHOOL_BOX_GROUP_ID:
+            case WidgetID.RESIZABLE_VIEWPORT_BOTTOM_LINE_GROUP_ID:
+                this.sidebarOverlay.setIsFixedViewport(false);
+                break;
+        }
     }
 
     @Override
