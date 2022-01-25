@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.ScriptID;
 import net.runelite.api.events.*;
@@ -32,8 +31,7 @@ import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
-@Slf4j
-@PluginDescriptor(name = "Fragment Presets1")
+@PluginDescriptor(name = "Fragment Presets")
 public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements MouseListener {
     @Inject
     private Client client;

@@ -1,7 +1,6 @@
 package io.tja.osrs.shattered_relics_fragment_presets;
 
 import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
@@ -15,7 +14,6 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@Slf4j
 public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPanel {
 
     private final Client client;
