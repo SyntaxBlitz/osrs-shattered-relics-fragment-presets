@@ -5,8 +5,9 @@ import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.KeyCode;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.ScriptID;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
@@ -31,7 +32,6 @@ import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
-@Slf4j
 @PluginDescriptor(name = "Fragment Presets")
 public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements MouseListener {
     @Inject
@@ -184,6 +184,10 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
             lastEquippedFragmentsForScrollFlow = equippedFragmentNames;
         }
 
+        if (config.shitClickEquipFragment() && !client.isMenuOpen() && client.isKeyPressed(KeyCode.KC_SHIFT)) {
+            swapFragmentsMenuEntry();
+        }
+
         showingFragments = true;
     }
 
@@ -287,6 +291,32 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         }
 
         return mouseEvent;
+    }
+
+    private void swapFragmentsMenuEntry() {
+        /* This will only be called when the fragment window is open, we can do some simple filtering to ensure
+            we have the correct menu */
+        MenuEntry[] menuEntries = client.getMenuEntries();
+        if (menuEntries.length != 3) return;
+        int equipIndex = 1;
+        int viewIndex = 2;
+        // Sanity check "Cancel" option
+        int cancelIndex = 0;
+
+        boolean equipExists = (Text.removeTags(menuEntries[equipIndex].getOption()).equals("Equip"));
+        boolean viewExists = Text.removeTags(menuEntries[viewIndex].getOption()).equals("View");
+        boolean cancelExists = Text.removeTags(menuEntries[cancelIndex].getOption()).equals("Cancel");
+
+
+        if (equipExists && viewExists && cancelExists) {
+            MenuEntry leftClickEntry = menuEntries[equipIndex];
+            MenuEntry entry2 = menuEntries[viewIndex];
+
+            menuEntries[viewIndex] = leftClickEntry;
+            menuEntries[equipIndex] = entry2;
+
+            client.setMenuEntries(menuEntries);
+        }
     }
 
     @Override
