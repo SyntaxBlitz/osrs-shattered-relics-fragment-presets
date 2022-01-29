@@ -319,7 +319,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         boolean viewExists = Text.removeTags(menuEntries[viewIndex].getOption()).equals("View");
         boolean cancelExists = Text.removeTags(menuEntries[cancelIndex].getOption()).equals("Cancel");
 
-
         if (equipExists && viewExists && cancelExists) {
             MenuEntry leftClickEntry = menuEntries[equipIndex];
             MenuEntry entry2 = menuEntries[viewIndex];
