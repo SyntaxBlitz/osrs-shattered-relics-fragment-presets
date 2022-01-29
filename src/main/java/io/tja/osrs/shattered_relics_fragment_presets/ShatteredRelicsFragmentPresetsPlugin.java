@@ -11,6 +11,7 @@ import net.runelite.api.MenuEntry;
 import net.runelite.api.ScriptID;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
@@ -157,27 +158,38 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 
         if (scrollFlowActive && activePreset != null) { // activePreset should always be non-null here but good to check
             if (!equippedFragmentNames.equals(lastEquippedFragmentsForScrollFlow)) {
-                // scroll to the next one
-                FragmentData[] sortedByScrollY = fragmentData.toArray(new FragmentData[0]);
-                Arrays.sort(sortedByScrollY);
-                FragmentData nextFragment = Arrays.stream(sortedByScrollY)
-                        .filter(fragment -> !fragment.isEquipped)
-                        .findFirst()
-                        .orElse(null);
-                if (nextFragment == null) {
+                long oldInPresetCount = lastEquippedFragmentsForScrollFlow == null ? 0 :
+                        lastEquippedFragmentsForScrollFlow.stream().filter(name -> activePreset.fragments.contains(name)).count();
+                long newInPresetCount =
+                        equippedFragmentNames.stream().filter(name -> activePreset.fragments.contains(name)).count();
+                if (newInPresetCount < oldInPresetCount) {
+                    // if we just unequipped a fragment that IS in the preset, unselect the preset. we're not using it
+                    // right now, obviously. useful for when you're creating a new preset off of an old one
                     scrollFlowActive = false;
+                    activePreset = null;
                 } else {
-                    int scrollY = (int) (totalScrollHeight * nextFragment.scrollPercentage);
-                    // shouldn't be necessary but let's be safe. not sure scrollPercentage will be
-                    // 0-1
-                    int clampedScroll = (int) Math.max(0, Math.min(totalScrollHeight, scrollY));
-                    fragmentList.setScrollY(clampedScroll);
-                    client.runScript(
-                            ScriptID.UPDATE_SCROLLBAR,
-                            fragmentScrollbar.getId(),
-                            fragmentList.getId(),
-                            clampedScroll);
+                    // scroll to the next one
+                    FragmentData[] sortedByScrollY = fragmentData.toArray(new FragmentData[0]);
+                    Arrays.sort(sortedByScrollY);
+                    FragmentData nextFragment = Arrays.stream(sortedByScrollY)
+                            .filter(fragment -> !fragment.isEquipped)
+                            .findFirst()
+                            .orElse(null);
+                    if (nextFragment == null) {
+                        scrollFlowActive = false;
+                    } else {
+                        int scrollY = (int) (totalScrollHeight * nextFragment.scrollPercentage);
+                        // shouldn't be necessary but let's be safe. not sure scrollPercentage will be
+                        // 0-1
+                        int clampedScroll = (int) Math.max(0, Math.min(totalScrollHeight, scrollY));
+                        fragmentList.setScrollY(clampedScroll);
+                        client.runScript(
+                                ScriptID.UPDATE_SCROLLBAR,
+                                fragmentScrollbar.getId(),
+                                fragmentList.getId(),
+                                clampedScroll);
 
+                    }
                 }
             }
 
@@ -318,6 +330,19 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
             client.setMenuEntries(menuEntries);
         }
     }
+  
+    @Subscribe
+    public void onWidgetLoaded(WidgetLoaded event) {
+        switch (event.getGroupId()) {
+            case WidgetID.FIXED_VIEWPORT_GROUP_ID:
+                this.sidebarOverlay.setIsFixedViewport(true);
+                break;
+            case WidgetID.RESIZABLE_VIEWPORT_OLD_SCHOOL_BOX_GROUP_ID:
+            case WidgetID.RESIZABLE_VIEWPORT_BOTTOM_LINE_GROUP_ID:
+                this.sidebarOverlay.setIsFixedViewport(false);
+                break;
+        }
+    }
 
     @Override
     public MouseEvent mouseClicked(MouseEvent mouseEvent) {
@@ -347,6 +372,14 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     @Override
     public MouseEvent mouseMoved(MouseEvent mouseEvent) {
         return mouseEvent;
+    }
+
+    public int getOffsetX() {
+        return config.resizableOffsetX();
+    }
+
+    public int getOffsetY() {
+        return config.resizableOffsetY();
     }
 
     @Provides

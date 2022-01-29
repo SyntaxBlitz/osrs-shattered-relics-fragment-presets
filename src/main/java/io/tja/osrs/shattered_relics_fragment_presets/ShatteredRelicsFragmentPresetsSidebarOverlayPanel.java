@@ -2,8 +2,11 @@ package io.tja.osrs.shattered_relics_fragment_presets;
 
 import com.google.inject.Inject;
 import net.runelite.api.Client;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.*;
+import net.runelite.client.ui.overlay.components.ComponentConstants;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
 
@@ -25,6 +28,8 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
     private final int SIDEBAR_RIGHT_MARGIN = 12;
     private final int SIDEBAR_TOP_MARGIN = 4;
 
+    private boolean isFixedWidth;
+
     private final Map<Preset, LineComponent> presetButtonComponents = new HashMap<>();
 
     @Inject
@@ -32,8 +37,6 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
             ShatteredRelicsFragmentPresetsPlugin plugin) {
         this.client = client;
         this.plugin = plugin;
-
-        panelComponent.setPreferredSize(new Dimension(SIDEBAR_WIDTH, 0));
         titleComponent = TitleComponent.builder().text("Presets").build();
         spacer = LineComponent.builder().build();
         newPresetButtonComponent = LineComponent.builder().left("+ Save as preset").build();
@@ -42,6 +45,18 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ALWAYS_ON_TOP);
         setPriority(OverlayPriority.MED);
+    }
+
+    public void setIsFixedViewport(boolean isFixedWidth) {
+        this.isFixedWidth = isFixedWidth;
+        if (isFixedWidth) {
+            Widget rootInterfaceWidget = client.getWidget(WidgetInfo.FIXED_VIEWPORT_ROOT_INTERFACE_CONTAINER);
+            panelComponent.setPreferredSize(new Dimension(rootInterfaceWidget.getOriginalWidth(), 0));
+            panelComponent.setBackgroundColor(new Color(70, 61, 50, 255));
+        } else {
+            panelComponent.setPreferredSize(new Dimension(SIDEBAR_WIDTH, 0));
+            panelComponent.setBackgroundColor(ComponentConstants.STANDARD_BACKGROUND_COLOR);
+        }
     }
 
     private void checkComponents() {
@@ -78,9 +93,16 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         checkComponents();
 
         renderPresetSidebar(graphics);
-        panelComponent.setPreferredLocation(new Point(
-                plugin.fragmentWindowBounds.x - SIDEBAR_WIDTH - SIDEBAR_RIGHT_MARGIN,
-                plugin.fragmentWindowBounds.y + SIDEBAR_TOP_MARGIN));
+        if (isFixedWidth) {
+            Widget rootInterfaceWidget = client.getWidget(WidgetInfo.FIXED_VIEWPORT_ROOT_INTERFACE_CONTAINER);
+            panelComponent.setPreferredLocation(new Point(
+                    rootInterfaceWidget.getOriginalX(),
+                    rootInterfaceWidget.getOriginalY()));
+        } else {
+            panelComponent.setPreferredLocation(new Point(
+                    plugin.fragmentWindowBounds.x - SIDEBAR_WIDTH - SIDEBAR_RIGHT_MARGIN + plugin.getOffsetX(),
+                    plugin.fragmentWindowBounds.y + SIDEBAR_TOP_MARGIN + plugin.getOffsetY()));
+        }
 
         plugin.newPresetButtonBounds = newPresetButtonComponent.getBounds();
         plugin.deletePresetButtonBounds = deletePresetButtonComponent.getBounds();
