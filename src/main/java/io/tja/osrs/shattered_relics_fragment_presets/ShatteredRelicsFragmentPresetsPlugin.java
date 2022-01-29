@@ -331,6 +331,14 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         return mouseEvent;
     }
 
+    public int getOffsetX() {
+        return config.resizableOffsetX();
+    }
+
+    public int getOffsetY() {
+        return config.resizableOffsetY();
+    }
+
     @Provides
     ShatteredRelicsFragmentPresetsConfig provideConfig(ConfigManager configManager) {
         return configManager.getConfig(ShatteredRelicsFragmentPresetsConfig.class);

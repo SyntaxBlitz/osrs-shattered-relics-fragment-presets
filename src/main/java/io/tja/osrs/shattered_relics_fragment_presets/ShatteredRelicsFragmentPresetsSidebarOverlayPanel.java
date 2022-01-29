@@ -100,8 +100,8 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
                     rootInterfaceWidget.getOriginalY()));
         } else {
             panelComponent.setPreferredLocation(new Point(
-                    plugin.fragmentWindowBounds.x - SIDEBAR_WIDTH - SIDEBAR_RIGHT_MARGIN,
-                    plugin.fragmentWindowBounds.y + SIDEBAR_TOP_MARGIN));
+                    plugin.fragmentWindowBounds.x - SIDEBAR_WIDTH - SIDEBAR_RIGHT_MARGIN + plugin.getOffsetX(),
+                    plugin.fragmentWindowBounds.y + SIDEBAR_TOP_MARGIN + plugin.getOffsetY()));
         }
 
         plugin.newPresetButtonBounds = newPresetButtonComponent.getBounds();
