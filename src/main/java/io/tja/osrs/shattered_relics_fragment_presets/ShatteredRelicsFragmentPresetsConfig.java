@@ -38,11 +38,11 @@ public interface ShatteredRelicsFragmentPresetsConfig extends Config {
     @ConfigItem(
             keyName = "shift_click_Equip",
             name = "Shift-click equip",
-            description = "Equip fragments by shift-clicking them. Note: There's currently no way to swap the " +
-                    "\"unequip\" option.",
+            description = "Equip fragments by shift-clicking them. Note: only works when clicking fragment text, not " +
+                    "fragment icons.",
             position = 2
     )
     default boolean shitClickEquipFragment() {
-        return true;
+        return false;
     }
 }
