@@ -3,12 +3,10 @@ package io.tja.osrs.shattered_relics_fragment_presets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.inject.Provides;
+
 import javax.inject.Inject;
 
-import net.runelite.api.Client;
-import net.runelite.api.KeyCode;
-import net.runelite.api.MenuEntry;
-import net.runelite.api.ScriptID;
+import net.runelite.api.*;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
@@ -25,16 +23,69 @@ import net.runelite.client.util.Text;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 @PluginDescriptor(name = "Fragment Presets")
 public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements MouseListener {
+    private final Set<String> FRAGMENTS = Set.of(
+            "Alchemaniac",
+            "Arcane Conduit",
+            "Armadylean Decree",
+            "Bandosian Might",
+            "Barbarian Pest Wars",
+            "Bottomless Quiver",
+            "Catch Of The Day",
+            "Certified Farmer",
+            "Chef's Catch",
+            "Chinchonkers",
+            "Clued In",
+            "Deeper Pockets",
+            "Dine & Dash",
+            "Divine Restoration",
+            "Dragon On A Bit",
+            "Enchanted Jeweler",
+            "Golden Brick Road",
+            "Grave Robber",
+            "Homewrecker",
+            "Hot On The Trail",
+            "Imcando's Apprentice",
+            "Just Druid!",
+            "Larger Recharger",
+            "Livin' On A Prayer",
+            "Message In A Bottle",
+            "Mixologist",
+            "Molten Miner",
+            "Mother's Magic Fossils",
+            "Plank Stretcher",
+            "Praying Respects",
+            "Pro Tips",
+            "Profletchional",
+            "Rock Solid",
+            "Rogues' Chompy Farm",
+            "Rooty Tooty 2x Runeys",
+            "Rumple-Bow-String",
+            "Rune Escape",
+            "Saradominist Defence",
+            "Seedy Business",
+            "Slash & Burn",
+            "Slay 'n' Pay",
+            "Slay All Day",
+            "Smithing Double",
+            "Smooth Criminal",
+            "Special Discount",
+            "Superior Tracking",
+            "Tactical Duelist",
+            "Thrall Damage",
+            "Unholy Ranger",
+            "Unholy Warrior",
+            "Unholy Wizard",
+            "Venomaster",
+            "Zamorakian Sight"
+    );
+
     @Inject
     private Client client;
 
@@ -102,6 +153,23 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         overlayManager.remove(sidebarOverlay);
     }
 
+    private void updateDragAndDropBehavior(Collection<Widget> widgets) {
+        switch (config.dragMode()) {
+            case ENABLED:
+                break;
+            case IMPROVED:
+                for (Widget widget : widgets) {
+                    widget.setDragDeadTime(10);
+                    widget.setDragDeadZone(16);
+                }
+            case DISABLED:
+                for (Widget widget : widgets) {
+                    widget.setDragDeadTime(Integer.MAX_VALUE);
+                }
+        }
+
+    }
+
     @Subscribe
     public void onClientTick(ClientTick event) {
         Widget fragmentWindow = client.getWidget(735, 1);
@@ -125,6 +193,13 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         equippedFragmentNames = equippedFragmentWidgets.stream()
                 .map(child -> Text.removeTags(child.getName()))
                 .collect(Collectors.toSet());
+
+        Set<Widget> draggableWidgets =
+                Arrays.stream(fragmentList.getDynamicChildren())
+                        .filter(widget -> widget.getDragDeadTime() > 0)
+                        .collect(Collectors.toSet());
+        draggableWidgets.addAll(equippedFragmentWidgets);
+        updateDragAndDropBehavior(draggableWidgets);
 
         presetEquippedFragmentBounds = equippedFragmentWidgets.stream()
                 .filter(widget -> activePreset != null
@@ -196,11 +271,25 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
             lastEquippedFragmentsForScrollFlow = equippedFragmentNames;
         }
 
-        if (config.shitClickEquipFragment() && !client.isMenuOpen() && client.isKeyPressed(KeyCode.KC_SHIFT)) {
-            swapFragmentsMenuEntry();
-        }
-
         showingFragments = true;
+    }
+
+    @Subscribe
+    public void onMenuEntryAdded(MenuEntryAdded event) {
+        if (
+                !config.shiftClickToggleFragment() ||
+                !client.isKeyPressed(KeyCode.KC_SHIFT) ||
+                !event.getOption().equals("View") ||
+                event.getType() != MenuAction.CC_OP.getId() ||
+                event.getTarget().length() == 0
+        ) return;
+
+        String target = event.getTarget().replaceAll("<[^>]+>", "");
+
+        if (FRAGMENTS.contains(target)) {
+            MenuEntry[] entries = client.getMenuEntries();
+            client.setMenuEntries(Arrays.copyOf(entries, entries.length - 1));
+        }
     }
 
     private void newPreset() {
@@ -249,7 +338,8 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                     activePreset = null;
                     persistPresets();
                 })
-                .option("Nevermind!", () -> {})
+                .option("Nevermind!", () -> {
+                })
                 .build();
     }
 
@@ -305,31 +395,6 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         return mouseEvent;
     }
 
-    private void swapFragmentsMenuEntry() {
-        /* This will only be called when the fragment window is open, we can do some simple filtering to ensure
-            we have the correct menu */
-        MenuEntry[] menuEntries = client.getMenuEntries();
-        if (menuEntries.length != 3) return;
-        int equipIndex = 1;
-        int viewIndex = 2;
-        // Sanity check "Cancel" option
-        int cancelIndex = 0;
-
-        boolean equipExists = (Text.removeTags(menuEntries[equipIndex].getOption()).equals("Equip"));
-        boolean viewExists = Text.removeTags(menuEntries[viewIndex].getOption()).equals("View");
-        boolean cancelExists = Text.removeTags(menuEntries[cancelIndex].getOption()).equals("Cancel");
-
-        if (equipExists && viewExists && cancelExists) {
-            MenuEntry leftClickEntry = menuEntries[equipIndex];
-            MenuEntry entry2 = menuEntries[viewIndex];
-
-            menuEntries[viewIndex] = leftClickEntry;
-            menuEntries[equipIndex] = entry2;
-
-            client.setMenuEntries(menuEntries);
-        }
-    }
-  
     @Subscribe
     public void onWidgetLoaded(WidgetLoaded event) {
         switch (event.getGroupId()) {
