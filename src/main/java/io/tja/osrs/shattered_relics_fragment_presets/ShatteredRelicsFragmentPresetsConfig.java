@@ -36,13 +36,26 @@ public interface ShatteredRelicsFragmentPresetsConfig extends Config {
     }
 
     @ConfigItem(
-            keyName = "shift_click_Equip",
-            name = "Shift-click equip",
-            description = "Equip fragments by shift-clicking them. Note: only works when clicking fragment text, not " +
-                    "fragment icons.",
+            keyName = "shift_click_equip_unequip",
+            name = "Shift-click equip/unequip",
+            description = "Equip and unequip fragments by shift-clicking them",
             position = 2
     )
-    default boolean shitClickEquipFragment() {
-        return false;
+    default boolean shiftClickToggleFragment() {
+        return true;
     }
+
+    enum DragMode {
+        ENABLED,
+        IMPROVED,
+        DISABLED
+    }
+    @ConfigItem(
+            keyName = "drag_mode",
+            name = "Drag and Drop",
+            description = "How fragment dragging and dropping should function - 'Improved' and 'Disabled' make it " +
+                    "easier to shift-click fragments quickly",
+            position = 3
+    )
+    default DragMode dragMode() { return DragMode.ENABLED; }
 }
