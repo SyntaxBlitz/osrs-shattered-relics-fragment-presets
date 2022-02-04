@@ -30,61 +30,61 @@ import java.util.stream.Collectors;
 
 @PluginDescriptor(name = "Fragment Presets")
 public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements MouseListener {
-    private final Set<String> FRAGMENTS = Set.of(
-            "Alchemaniac",
-            "Arcane Conduit",
-            "Armadylean Decree",
-            "Bandosian Might",
-            "Barbarian Pest Wars",
-            "Bottomless Quiver",
-            "Catch Of The Day",
-            "Certified Farmer",
-            "Chef's Catch",
-            "Chinchonkers",
-            "Clued In",
-            "Deeper Pockets",
-            "Dine & Dash",
-            "Divine Restoration",
-            "Dragon On A Bit",
-            "Enchanted Jeweler",
-            "Golden Brick Road",
-            "Grave Robber",
-            "Homewrecker",
-            "Hot On The Trail",
-            "Imcando's Apprentice",
-            "Just Druid!",
-            "Larger Recharger",
-            "Livin' On A Prayer",
-            "Message In A Bottle",
-            "Mixologist",
-            "Molten Miner",
-            "Mother's Magic Fossils",
-            "Plank Stretcher",
-            "Praying Respects",
-            "Pro Tips",
-            "Profletchional",
-            "Rock Solid",
-            "Rogues' Chompy Farm",
-            "Rooty Tooty 2x Runeys",
-            "Rumple-Bow-String",
-            "Rune Escape",
-            "Saradominist Defence",
-            "Seedy Business",
-            "Slash & Burn",
-            "Slay 'n' Pay",
-            "Slay All Day",
-            "Smithing Double",
-            "Smooth Criminal",
-            "Special Discount",
-            "Superior Tracking",
-            "Tactical Duelist",
-            "Thrall Damage",
-            "Unholy Ranger",
-            "Unholy Warrior",
-            "Unholy Wizard",
-            "Venomaster",
-            "Zamorakian Sight"
-    );
+    private final Set<String> FRAGMENTS = new HashSet<String>(Arrays.asList(new String[]{
+        "Alchemaniac",
+        "Arcane Conduit",
+        "Armadylean Decree",
+        "Bandosian Might",
+        "Barbarian Pest Wars",
+        "Bottomless Quiver",
+        "Catch Of The Day",
+        "Certified Farmer",
+        "Chef's Catch",
+        "Chinchonkers",
+        "Clued In",
+        "Deeper Pockets",
+        "Dine & Dash",
+        "Divine Restoration",
+        "Dragon On a Bit",
+        "Enchanted Jeweler",
+        "Golden Brick Road",
+        "Grave Robber",
+        "Homewrecker",
+        "Hot on the Trail",
+        "Imcando's Apprentice",
+        "Just Druid!",
+        "Larger Recharger",
+        "Livin' On A Prayer",
+        "Message In A Bottle",
+        "Mixologist",
+        "Molten Miner",
+        "Mother's Magic Fossils",
+        "Plank Stretcher",
+        "Praying Respects",
+        "Pro Tips",
+        "Profletchional",
+        "Rock Solid",
+        "Rogues' Chompy Farm",
+        "Rooty Tooty 2x Runeys",
+        "Rumple-Bow-String",
+        "Rune Escape",
+        "Saradominist Defence",
+        "Seedy Business",
+        "Slash & Burn",
+        "Slay 'n' Pay",
+        "Slay All Day",
+        "Smithing Double",
+        "Smooth Criminal",
+        "Special Discount",
+        "Superior Tracking",
+        "Tactical Duelist",
+        "Thrall Damage",
+        "Unholy Ranger",
+        "Unholy Warrior",
+        "Unholy Wizard",
+        "Venomaster",
+        "Zamorakian Sight"
+    }).stream().map(s -> s.toLowerCase()).collect(Collectors.toList()));
 
     @Inject
     private Client client;
@@ -162,6 +162,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                     widget.setDragDeadTime(10);
                     widget.setDragDeadZone(16);
                 }
+                break;
             case DISABLED:
                 for (Widget widget : widgets) {
                     widget.setDragDeadTime(Integer.MAX_VALUE);
@@ -284,9 +285,9 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                 event.getTarget().length() == 0
         ) return;
 
-        String target = event.getTarget().replaceAll("<[^>]+>", "");
+        String target = Text.removeTags(event.getTarget());
 
-        if (FRAGMENTS.contains(target)) {
+        if (FRAGMENTS.contains(target.toLowerCase())) {
             MenuEntry[] entries = client.getMenuEntries();
             client.setMenuEntries(Arrays.copyOf(entries, entries.length - 1));
         }

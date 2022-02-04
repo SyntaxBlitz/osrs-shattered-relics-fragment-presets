@@ -42,7 +42,7 @@ public interface ShatteredRelicsFragmentPresetsConfig extends Config {
             position = 2
     )
     default boolean shiftClickToggleFragment() {
-        return false;
+        return true;
     }
 
     enum DragMode {
