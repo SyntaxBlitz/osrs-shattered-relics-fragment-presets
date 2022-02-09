@@ -184,10 +184,10 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         Widget showFiltersButton = client.getWidget(735, 9);
         suppressFilterOverlay = showFiltersButton.getText().equals(("Hide Filters"));
 
-        Widget fragmentList = client.getWidget(735, 17);
-        Widget fragmentScrollbar = client.getWidget(735, 18);
+        Widget fragmentList = client.getWidget(735, 18);
+        Widget fragmentScrollbar = client.getWidget(735, 19);
         Widget fragmentScrollbarInner = fragmentScrollbar.getChildren()[0];
-        Widget equippedFragmentsContainer = client.getWidget(735, 35);
+        Widget equippedFragmentsContainer = client.getWidget(735, 36);
         Set<Widget> equippedFragmentWidgets = Arrays.stream(equippedFragmentsContainer.getDynamicChildren())
                 .filter(child -> child.getName() != null && !child.getName().isEmpty())
                 .collect(Collectors.toSet());
