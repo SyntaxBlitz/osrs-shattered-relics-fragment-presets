@@ -23,6 +23,8 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
     private final LineComponent spacer;
     private final LineComponent newPresetButtonComponent;
     private final LineComponent deletePresetButtonComponent;
+    private final LineComponent importPresetButtonComponent;
+    private final LineComponent exportPresetButtonComponent;
 
     private final int SIDEBAR_WIDTH = 120;
     private final int SIDEBAR_RIGHT_MARGIN = 12;
@@ -41,6 +43,8 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         spacer = LineComponent.builder().build();
         newPresetButtonComponent = LineComponent.builder().left("+ Save as preset").build();
         deletePresetButtonComponent = LineComponent.builder().left("- Delete this preset").build();
+        importPresetButtonComponent = LineComponent.builder().left("Import <- clipboard").build();
+        exportPresetButtonComponent = LineComponent.builder().left("Export -> clipboard").build();
 
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ALWAYS_ON_TOP);
@@ -106,6 +110,8 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
 
         plugin.newPresetButtonBounds = newPresetButtonComponent.getBounds();
         plugin.deletePresetButtonBounds = deletePresetButtonComponent.getBounds();
+        plugin.importPresetButtonBounds = importPresetButtonComponent.getBounds();
+        plugin.exportPresetButtonBounds = exportPresetButtonComponent.getBounds();
 
         return super.render(graphics);
     }
@@ -122,6 +128,8 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
             }
             panelComponent.getChildren().add(deletePresetButtonComponent);
         }
+        panelComponent.getChildren().add(importPresetButtonComponent);
+        panelComponent.getChildren().add(exportPresetButtonComponent);
         panelComponent.getChildren().add(spacer);
 
         for (Preset p : plugin.allPresets) {
