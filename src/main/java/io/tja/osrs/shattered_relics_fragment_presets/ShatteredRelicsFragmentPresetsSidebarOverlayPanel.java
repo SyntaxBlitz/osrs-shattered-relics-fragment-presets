@@ -110,8 +110,13 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
 
         plugin.newPresetButtonBounds = newPresetButtonComponent.getBounds();
         plugin.deletePresetButtonBounds = deletePresetButtonComponent.getBounds();
-        plugin.importPresetButtonBounds = importPresetButtonComponent.getBounds();
-        plugin.exportPresetButtonBounds = exportPresetButtonComponent.getBounds();
+        if (plugin.shouldShowExtraButtons()) {
+            plugin.importPresetButtonBounds = importPresetButtonComponent.getBounds();
+            plugin.exportPresetButtonBounds = exportPresetButtonComponent.getBounds();
+        } else {
+            plugin.importPresetButtonBounds = null;
+            plugin.exportPresetButtonBounds = null;
+        }
 
         return super.render(graphics);
     }
@@ -128,8 +133,10 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
             }
             panelComponent.getChildren().add(deletePresetButtonComponent);
         }
-        panelComponent.getChildren().add(importPresetButtonComponent);
-        panelComponent.getChildren().add(exportPresetButtonComponent);
+        if (plugin.shouldShowExtraButtons()) {
+            panelComponent.getChildren().add(importPresetButtonComponent);
+            panelComponent.getChildren().add(exportPresetButtonComponent);
+        }
         panelComponent.getChildren().add(spacer);
 
         for (Preset p : plugin.allPresets) {

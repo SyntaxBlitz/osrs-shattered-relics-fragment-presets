@@ -58,4 +58,14 @@ public interface ShatteredRelicsFragmentPresetsConfig extends Config {
             position = 3
     )
     default DragMode dragMode() { return DragMode.ENABLED; }
+
+    @ConfigItem(
+            keyName = "show_extra_buttons",
+            name = "Show import/export buttons",
+            description = "Show extra buttons for importing to/exporting from system clipboard",
+            position = 4
+    )
+    default boolean showExtraButtons() {
+        return false;
+    }
 }

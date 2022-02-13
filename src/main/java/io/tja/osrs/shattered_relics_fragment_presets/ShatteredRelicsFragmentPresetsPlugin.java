@@ -520,6 +520,10 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         return config.resizableOffsetY();
     }
 
+    public boolean shouldShowExtraButtons() {
+        return config.showExtraButtons();
+    }
+
     @Provides
     ShatteredRelicsFragmentPresetsConfig provideConfig(ConfigManager configManager) {
         return configManager.getConfig(ShatteredRelicsFragmentPresetsConfig.class);
