@@ -10,6 +10,8 @@ import net.runelite.api.*;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
@@ -21,7 +23,12 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.Text;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.List;
@@ -113,6 +120,9 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     @Inject
     private ConfigManager configManager;
 
+    @Inject
+    private ChatMessageManager chatMessageManager;
+
     public static final IntPredicate FILTERED_CHARS = c -> "</>:".indexOf(c) == -1;
 
     public boolean showingFragments = false;
@@ -129,6 +139,8 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 
     public Rectangle newPresetButtonBounds; // set by overlay
     public Rectangle deletePresetButtonBounds; // set by overlay
+    public Rectangle importPresetButtonBounds; // set by overlay
+    public Rectangle exportPresetButtonBounds; // set by overlay
 
     public List<Preset> allPresets = new ArrayList<>();
     public static Type PRESET_LIST_TYPE = new TypeToken<List<Preset>>() {
@@ -344,6 +356,48 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                 .build();
     }
 
+    private void importPreset() {
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Clipboard clipboard = toolkit.getSystemClipboard();
+        String fragments = null;
+        try {
+            fragments = (String)clipboard.getData(DataFlavor.stringFlavor);
+        } catch (Exception e) {
+            sendChatMessage("Unable to retrieve text from clipboard.");
+        }
+        if (fragments == null || fragments.isEmpty())
+            return;
+
+        String[] frags;
+        try {
+            Gson gson = new Gson();
+            frags = gson.fromJson(fragments, String[].class);
+        } catch (com.google.gson.JsonSyntaxException e) {
+            sendChatMessage("Invalid format for importing from clipboard.");
+            return;
+        }
+
+        if (frags == null || frags.length < 1)
+            return;
+
+        Preset preset = new Preset();
+        preset.fragments = new HashSet<>(Arrays.asList(frags));
+        activePreset = preset;
+        scrollFlowActive = true;
+        lastEquippedFragmentsForScrollFlow = null;
+    }
+
+    private void exportPreset() {
+        Object[] objectArray = equippedFragmentNames.toArray();
+        String[] stringArray = Arrays.copyOf(objectArray, objectArray.length, String[].class);
+        Gson gson = new Gson();
+        String names = gson.toJson(stringArray, String[].class);
+        StringSelection export = new StringSelection(names);
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Clipboard clipboard = toolkit.getSystemClipboard();
+        clipboard.setContents(export, null);
+    }
+
     private void loadPersistedPresets() {
         String json = configManager.getConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
                 ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS);
@@ -358,6 +412,13 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         String json = gson.toJson(allPresets, PRESET_LIST_TYPE);
         configManager.setConfiguration(ShatteredRelicsFragmentPresetsConfig.CONFIG_GROUP,
                 ShatteredRelicsFragmentPresetsConfig.ALL_PRESETS, json);
+    }
+
+    private void sendChatMessage(final String message) {
+        chatMessageManager.queue(QueuedMessage.builder()
+                .type(ChatMessageType.CONSOLE)
+                .runeLiteFormattedMessage(message)
+                .build());
     }
 
     @Override
@@ -377,6 +438,18 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 
         if (deletePresetButtonBounds != null && deletePresetButtonBounds.contains(mouseEvent.getPoint())) {
             deletePreset();
+            mouseEvent.consume();
+            return mouseEvent;
+        }
+
+        if (importPresetButtonBounds != null && importPresetButtonBounds.contains(mouseEvent.getPoint())) {
+            importPreset();
+            mouseEvent.consume();
+            return mouseEvent;
+        }
+
+        if (exportPresetButtonBounds != null && exportPresetButtonBounds.contains(mouseEvent.getPoint())) {
+            exportPreset();
             mouseEvent.consume();
             return mouseEvent;
         }
@@ -445,6 +518,10 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 
     public int getOffsetY() {
         return config.resizableOffsetY();
+    }
+
+    public boolean shouldShowExtraButtons() {
+        return config.showExtraButtons();
     }
 
     @Provides
