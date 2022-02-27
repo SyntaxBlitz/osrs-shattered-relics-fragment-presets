@@ -14,6 +14,7 @@ import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.input.MouseListener;
 import net.runelite.client.input.MouseManager;
@@ -141,11 +142,14 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     public Rectangle deletePresetButtonBounds; // set by overlay
     public Rectangle importPresetButtonBounds; // set by overlay
     public Rectangle exportPresetButtonBounds; // set by overlay
+    public Rectangle previousPageButtonBounds; // set by overlay
+    public Rectangle nextPageButtonBounds; // set by overlay
 
     public List<Preset> allPresets = new ArrayList<>();
     public static Type PRESET_LIST_TYPE = new TypeToken<List<Preset>>() {
     }.getType();
     public Preset activePreset;
+    public int selectedPage = 0;
 
     @Override
     protected void startUp() throws Exception {
@@ -350,6 +354,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                     allPresets.remove(activePreset);
                     activePreset = null;
                     persistPresets();
+                    clampPageToBounds();
                 })
                 .option("Nevermind!", () -> {
                 })
@@ -454,7 +459,19 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
             return mouseEvent;
         }
 
-        for (Preset p : allPresets) {
+        if (previousPageButtonBounds != null && previousPageButtonBounds.contains(mouseEvent.getPoint())) {
+            selectedPage -= 1;
+            mouseEvent.consume();
+            return mouseEvent;
+        }
+
+        if (nextPageButtonBounds != null && nextPageButtonBounds.contains(mouseEvent.getPoint())) {
+            selectedPage += 1;
+            mouseEvent.consume();
+            return mouseEvent;
+        }
+
+        for (Preset p : currentPageOfPresets()) {
             if (p.renderedBounds == null)
                 continue;
             if (p.renderedBounds.contains(mouseEvent.getPoint())) {
@@ -469,6 +486,20 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         return mouseEvent;
     }
 
+    public List<Preset> currentPageOfPresets() {
+        return allPresets.subList(selectedPage * config.pageSize(), Math.min(selectedPage * config.pageSize() + config.pageSize(), allPresets.size()));
+    }
+
+    public int numberOfPages() {
+        return (int) Math.ceil((double) allPresets.size() / pageSize());
+    }
+
+    private void clampPageToBounds() {
+        if (selectedPage >= numberOfPages()) {
+            selectedPage = numberOfPages() - 1;
+        }
+    }
+
     @Subscribe
     public void onWidgetLoaded(WidgetLoaded event) {
         switch (event.getGroupId()) {
@@ -480,6 +511,11 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
                 this.sidebarOverlay.setIsFixedViewport(false);
                 break;
         }
+    }
+
+    @Subscribe
+    public void onConfigChanged(ConfigChanged event) {
+        clampPageToBounds();
     }
 
     @Override
@@ -522,6 +558,10 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
 
     public boolean shouldShowExtraButtons() {
         return config.showExtraButtons();
+    }
+
+    public int pageSize() {
+        return config.pageSize();
     }
 
     @Provides
