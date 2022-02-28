@@ -120,19 +120,14 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
             plugin.exportPresetButtonBounds = null;
         }
 
-        if (shouldRenderPreviousButton()) {
+        if (shouldRenderAnyPaginationButton()) {
             Rectangle fullBounds = pageChangeButtonComponent.getBounds();
             plugin.previousPageButtonBounds = new Rectangle(fullBounds.x, fullBounds.y, fullBounds.width / 2, fullBounds.height);
-        } else {
-            plugin.previousPageButtonBounds = null;
-        }
-        if (shouldRenderNextButton()) {
-            Rectangle fullBounds = pageChangeButtonComponent.getBounds();
             plugin.nextPageButtonBounds = new Rectangle(fullBounds.x + fullBounds.width / 2, fullBounds.y, fullBounds.width / 2, fullBounds.height);
         } else {
+            plugin.previousPageButtonBounds = null;
             plugin.nextPageButtonBounds = null;
         }
-
 
         return super.render(graphics);
     }
@@ -141,15 +136,15 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         titleComponent.setText(String.format("Presets (%d/%d)", plugin.selectedPage + 1, plugin.numberOfPages()));
         panelComponent.getChildren().add(titleComponent);
 
-        if (shouldRenderNextButton() || shouldRenderPreviousButton()) {
+        if (shouldRenderAnyPaginationButton()) {
             panelComponent.getChildren().add(pageChangeButtonComponent);
         }
-        if (shouldRenderPreviousButton()) {
+        if (plugin.shouldRenderPreviousButton()) {
             pageChangeButtonComponent.setLeft("<- Previous");
         } else {
             pageChangeButtonComponent.setLeft(null);
         }
-        if (shouldRenderNextButton()) {
+        if (plugin.shouldRenderNextButton()) {
             pageChangeButtonComponent.setRight("Next ->");
         } else {
             pageChangeButtonComponent.setRight(null);
@@ -185,11 +180,7 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         }
     }
 
-    private boolean shouldRenderPreviousButton() {
-        return plugin.selectedPage > 0;
-    }
-
-    private boolean shouldRenderNextButton() {
-        return plugin.selectedPage < plugin.numberOfPages() - 1;
+    private boolean shouldRenderAnyPaginationButton() {
+        return plugin.shouldRenderNextButton() || plugin.shouldRenderPreviousButton();
     }
 }

@@ -461,13 +461,15 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         }
 
         if (previousPageButtonBounds != null && previousPageButtonBounds.contains(mouseEvent.getPoint())) {
-            selectedPage -= 1;
+            if (shouldRenderPreviousButton()) selectedPage -= 1;
+            // consume the mouse event if the button is there but invisible (when there is a next button but no
+            // previous)
             mouseEvent.consume();
             return mouseEvent;
         }
 
         if (nextPageButtonBounds != null && nextPageButtonBounds.contains(mouseEvent.getPoint())) {
-            selectedPage += 1;
+            if (shouldRenderNextButton()) selectedPage += 1;
             mouseEvent.consume();
             return mouseEvent;
         }
@@ -567,6 +569,15 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         }
         return config.pageSize();
     }
+
+    public boolean shouldRenderPreviousButton() {
+        return selectedPage > 0;
+    }
+
+    public boolean shouldRenderNextButton() {
+        return selectedPage < numberOfPages() - 1;
+    }
+
 
     @Provides
     ShatteredRelicsFragmentPresetsConfig provideConfig(ConfigManager configManager) {
