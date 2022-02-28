@@ -75,7 +75,7 @@ public interface ShatteredRelicsFragmentPresetsConfig extends Config {
             description = "The number of presets to display per page",
             position = 5
     )
-    @Range(min = 1, max = Integer.MAX_VALUE)
+    @Range(min = -1, max = Integer.MAX_VALUE)
     default int pageSize() {
         return 10;
     }

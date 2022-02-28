@@ -488,7 +488,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     }
 
     public List<Preset> currentPageOfPresets() {
-        return allPresets.subList(selectedPage * config.pageSize(), Math.min(selectedPage * config.pageSize() + config.pageSize(), allPresets.size()));
+        return allPresets.subList(selectedPage * pageSize(), Math.min(selectedPage * pageSize() + pageSize(), allPresets.size()));
     }
 
     public int numberOfPages() {
@@ -562,6 +562,9 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     }
 
     public int pageSize() {
+        if (config.pageSize() < 1) {
+            return Integer.MAX_VALUE;
+        }
         return config.pageSize();
     }
 
