@@ -340,6 +340,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
         }
 
         allPresets.add(preset);
+        selectedPage = numberOfPages() - 1;
         persistPresets();
     }
 
