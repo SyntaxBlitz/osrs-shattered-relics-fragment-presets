@@ -25,6 +25,7 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
     private final LineComponent deletePresetButtonComponent;
     private final LineComponent importPresetButtonComponent;
     private final LineComponent exportPresetButtonComponent;
+    private final LineComponent pageChangeButtonComponent;
 
     private final int SIDEBAR_WIDTH = 120;
     private final int SIDEBAR_RIGHT_MARGIN = 12;
@@ -45,6 +46,7 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
         deletePresetButtonComponent = LineComponent.builder().left("- Delete this preset").build();
         importPresetButtonComponent = LineComponent.builder().left("Import <- clipboard").build();
         exportPresetButtonComponent = LineComponent.builder().left("Export -> clipboard").build();
+        pageChangeButtonComponent = LineComponent.builder().build();
 
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ALWAYS_ON_TOP);
@@ -118,12 +120,38 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
             plugin.exportPresetButtonBounds = null;
         }
 
+        if (shouldRenderAnyPaginationButton()) {
+            Rectangle fullBounds = pageChangeButtonComponent.getBounds();
+            plugin.previousPageButtonBounds = new Rectangle(fullBounds.x, fullBounds.y, fullBounds.width / 2, fullBounds.height);
+            plugin.nextPageButtonBounds = new Rectangle(fullBounds.x + fullBounds.width / 2, fullBounds.y, fullBounds.width / 2, fullBounds.height);
+        } else {
+            plugin.previousPageButtonBounds = null;
+            plugin.nextPageButtonBounds = null;
+        }
+
         return super.render(graphics);
     }
 
     private void renderPresetSidebar(Graphics2D graphics) {
+        titleComponent.setText(String.format("Presets (%d/%d)", plugin.selectedPage + 1, plugin.numberOfPages()));
         panelComponent.getChildren().add(titleComponent);
+
+        if (shouldRenderAnyPaginationButton()) {
+            panelComponent.getChildren().add(pageChangeButtonComponent);
+        }
+        if (plugin.shouldRenderPreviousButton()) {
+            pageChangeButtonComponent.setLeft("<- Previous");
+        } else {
+            pageChangeButtonComponent.setLeft(null);
+        }
+        if (plugin.shouldRenderNextButton()) {
+            pageChangeButtonComponent.setRight("Next ->");
+        } else {
+            pageChangeButtonComponent.setRight(null);
+        }
+
         panelComponent.getChildren().add(spacer);
+
         panelComponent.getChildren().add(newPresetButtonComponent);
         if (!plugin.allPresets.isEmpty()) {
             if (plugin.activePreset == null) {
@@ -137,9 +165,10 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
             panelComponent.getChildren().add(importPresetButtonComponent);
             panelComponent.getChildren().add(exportPresetButtonComponent);
         }
+
         panelComponent.getChildren().add(spacer);
 
-        for (Preset p : plugin.allPresets) {
+        for (Preset p : plugin.currentPageOfPresets()) {
             LineComponent c = presetButtonComponents.get(p);
             if (p == plugin.activePreset) {
                 c.setLeftColor(new Color(0, 255, 0, 255));
@@ -149,5 +178,13 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
             panelComponent.getChildren().add(c);
             p.renderedBounds = c.getBounds();
         }
+    }
+
+    private boolean shouldRenderAnyPaginationButton() {
+        return plugin.shouldRenderNextButton() || plugin.shouldRenderPreviousButton();
+    }
+
+    public boolean isFixedViewport() {
+        return isFixedWidth;
     }
 }

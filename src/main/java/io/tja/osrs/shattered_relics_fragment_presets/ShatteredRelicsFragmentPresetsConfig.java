@@ -68,4 +68,26 @@ public interface ShatteredRelicsFragmentPresetsConfig extends Config {
     default boolean showExtraButtons() {
         return false;
     }
+
+    @ConfigItem(
+            keyName = "resizable_page_size",
+            name = "Resizable mode page size",
+            description = "The number of presets to display per page in resizable mode (-1 to disable pagination)",
+            position = 5
+    )
+    @Range(min = -1, max = Integer.MAX_VALUE)
+    default int resizablePageSize() {
+        return 13;
+    }
+
+    @ConfigItem(
+            keyName = "fixed_page_size",
+            name = "Fixed mode page size",
+            description = "The number of presets to display per page in fixed mode (-1 to disable pagination)",
+            position = 5
+    )
+    @Range(min = -1, max = Integer.MAX_VALUE)
+    default int fixedPageSize() {
+        return 10;
+    }
 }
