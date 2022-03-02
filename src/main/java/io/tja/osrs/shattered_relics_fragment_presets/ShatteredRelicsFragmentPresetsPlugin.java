@@ -564,10 +564,11 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     }
 
     public int pageSize() {
-        if (config.pageSize() < 1) {
+        int configVal = this.sidebarOverlay.isFixedViewport() ? config.fixedPageSize() : config.resizablePageSize();
+        if (configVal < 1) {
             return Integer.MAX_VALUE;
         }
-        return config.pageSize();
+        return configVal;
     }
 
     public boolean shouldRenderPreviousButton() {

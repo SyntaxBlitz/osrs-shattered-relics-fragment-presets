@@ -183,4 +183,8 @@ public class ShatteredRelicsFragmentPresetsSidebarOverlayPanel extends OverlayPa
     private boolean shouldRenderAnyPaginationButton() {
         return plugin.shouldRenderNextButton() || plugin.shouldRenderPreviousButton();
     }
+
+    public boolean isFixedViewport() {
+        return isFixedWidth;
+    }
 }
