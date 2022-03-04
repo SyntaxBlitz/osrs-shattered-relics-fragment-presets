@@ -494,7 +494,7 @@ public class ShatteredRelicsFragmentPresetsPlugin extends Plugin implements Mous
     }
 
     public int numberOfPages() {
-        return (int) Math.ceil((double) allPresets.size() / pageSize());
+        return Math.max((int) Math.ceil((double) allPresets.size() / pageSize()), 1);
     }
 
     private void clampPageToBounds() {
